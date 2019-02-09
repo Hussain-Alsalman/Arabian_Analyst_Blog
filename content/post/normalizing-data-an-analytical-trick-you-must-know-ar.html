@@ -1,0 +1,158 @@
+---
+author: Hussain
+comments: true
+date: 2017-11-17 21:43:46+00:00
+layout: post
+link: https://arabianAnalyst.com/2017/11/17/normalizing-data-an-analytical-trick-you-must-know-ar/
+slug: normalizing-data-an-analytical-trick-you-must-know-ar
+title: تطبيع البيانات , مهارة على كل محلل اتقانها
+tags:
+- مهارة
+---
+
+
+
+<div id="---" class="section level4">
+<h4>ما المقصود بتطبيع البيانات؟</h4>
+<p>تطبيع البيانات هي عبارة عن مجموعة من العمليات الأولية نجريها على البيانات. قبل ان نبحر في ما تتضمنه هذه العمليات, اود ان ألفت انتباهك على ان “تطبيع البيانات” في مجال تحليل البيانات هو مفهوم مختلف تمام عن “تطبيع قواعد البيانات” والذي يندرج تحت مجال هندسة وتصميم قواعد البيانات. الهدف من تطبيع البيانات هو ان نوجد وحدة قياس موحدة لكل المتغيرات. وحدة القياس هذه سوف تمنع الصفات المتغيرية في المتغيرات ذو وحدات القياس الكبيرة من ابتلاع او سحق الصفات المتغيرية في المتغيرات ذو وحدات قياس اصغر. إن احسست ان هذه التعاريف بدأت في أخذ مسار تجريدي أو انك بدأت تشعر بالصداع, لا يهمك رح نأخذ مثال بعد قليل يوضح كل هذه المصطلحات.</p>
+</div>
+<div id="-----" class="section level4">
+<h4>ما العمليات المتوفرة للقيام بهذه المهمة؟</h4>
+<p>هناك الكثير من العمليات المتوفرة للتطبيع البيانات ولكن اشهرها هو</p>
+<ul>
+<li><p>Z-score Standardization</p></li>
+<li><p>Min-Max normalization</p></li>
+<li><p>Decimal Scaling</p></li>
+</ul>
+<p>كل هذه العمليات تسعى للوصول إلى نفس الغاية وهي تسوية جميع المتغيرات إلى وحدة قياس موحدة.</p>
+<p>الـ Min-Max normalization تسعى إلى تحويل جميع قيم المتغير إلى قيم تقع ما بين الصفر والواحد. هذه العملية تبين مدى بعد القيمة عن القيمة الدنيا للمتغير ونسبتها إلى المدى (وهو الفرق بين القيمة العليا والقيمة الدنيا). ليس هناك افضل من نرى ترجمة هذا التعريف بلغة الرياضيات. هذه هي المعادلة</p>
+<p><span class="math display">\[
+X_{mm}=\frac{x−min(X)}{max(X)−min(X)}
+\]</span></p>
+<p>العملية الثانية وهي Z-score Standardization. هذه العملية مشهورة جدا في وسط المحللين الإحصائيين. بل بالإمكان ان نجزم انه لا يوجد كتاب عن الإحصاء لا يحوي المعادلة لهذه العملية. هذه العملية تقوم بتطبيع القيم من خلال طرح القيمة من المتوسط وتقسيمه على الإنحراف المعياري للمتغير. هذه العملية سوف تحول جميع القيم إلى قيم موجبة او سالبة ويتوسطها المتوسط الحسابي وسوف تكون قميته صفر. خلينا نشوف هذه المعادلة الشهيرة</p>
+<p><span class="math display">\[
+Z_{score}=\frac{x−mean(X)}{Std(X)}
+\]</span></p>
+<p>أخيرًا وليس آخرا, الـ Decimal Scaling. بالرغم من ان هذه العملية في غاية السهولة الا انها اقل شهرة من العمليات الأخرى. كل ما علينا القيام به هو إيجاد القيمة المطلقة للقيمة العليا للمتغير وحساب عدد الارقام الغير كسرية فيه. ثم إدراجها في هذه المعادلة البسيطة. ما تحاول فعله هذه العملية هو تحويل جميع الارقام إلى اعداد كسرية .</p>
+<p><span class="math display">\[
+X^∗_{decimal}=\frac{x}{10d}
+\]</span> ملاحظة : نعوض قيمة d بالقيمة التي اوجدناها في التعريف</p>
+</div>
+<div id="----" class="section level4">
+<h4>مثال : حل مشاكل التصوير البياني</h4>
+<p>كل ما تعلمناه إلى الآن ممتاز ورائع ولكن إذا توقفنا هنا ستكون هذه المعادلات والتعاريف بدون قيمة عملية. لذلك وكما وعدتك في اول المقال, سوف نتداول مثال يبين تطبيق عملي لهذه المعادلات. في الحقيقة سوف نحاول حل مشكلة شائعة في التصوير البياني. تخيل السيناريوهات التالي</p>
+<ol style="list-style-type: decimal">
+<li><p>انت عندك مصنع وتود معرفة (عن طريق رسم بياني) إذا كان مستويات الإنتاج تترابط في حركتها مع مستويات الأرباح .</p></li>
+<li><p>انت لديك فضول في معرفة فيما إذا كانت اسعار الأسهم لشركة معينة تترابط في حركتها مع اسعار اسهم شركة أخرى (من خلال رسم بياني ايضا).</p></li>
+</ol>
+<p>هناك اكثر من طريقة للقيام بالمهمة في السناريو الأول. بإمكاننا رسم الخط البياني لمستويات الإنتاج والأرباح كلٌ في جهة مستقلة ومحاولة إيجاد اي ترابط عينياً. هذه الطريقة مجهدة للعين وغير فعّالة وهي طريقة سيئة لتصوير البيانات. الطريقة الأخرى هي ان نحاول ان نرسمهم في رسمة بيانية واحدة . هذه الطريقة ايضا لها مشاكلها وسوف نناقشها بعد قليل. لغرض برهنة ما ذكرناه عن المشاكل المتعلقة بهذه الطريقتين, رح نجربها كلها</p>
+<p>بما أنني لا املك بيانات حقيقة عن مستويات الإنتاج والأرباح, سوف اقوم بخلق بيانات مزيفة عشوائية من توازيع مختلفة تحاكي السيناريو الأول.</p>
+<pre class="r"><code>production &lt;- rlnorm(100 ,10, 1)
+profit &lt;- rnorm(100,300,110)</code></pre>
+<p>ملاحظة هامشية: في هذا الكود استخدمت التوزيع اللوغاريتمي الطبيعي لمستويات الإنتاج لكي نضمن ان تكون جميع القيم موجبة. اخترت المتوسط اللوغارتمي ان يكون ١٠ والإنحراف المعياري اللوغارتمي ١. بالنسبة إلى مستوى الارباح, فقد قمت بستخدام التوزيع الطبيعي لأن الارباح قد تكون موجبة او سالبة.</p>
+<p>دعنا نحاول رسم البيانات كلً على حدة.</p>
+<pre class="r"><code>#Ploting Produciton Alone
+plot(
+  production ,
+  type = &quot;l&quot;,
+  xlab = &quot;Number of Days&quot;,
+  ylab = &quot;Units&quot;,
+  main = &quot;Production Trend&quot;,
+  col = &quot;purple&quot;
+)</code></pre>
+<p><img src="/post/normalizing-data-an-analytical-trick-you-must-know-ar_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code>#Ploting Profit Alone
+plot(
+  profit,
+  type = &quot;l&quot;,
+  xlab = &quot;Number of Days&quot;,
+  ylab = &quot;Saudi Riyal&quot;,
+  main = &quot;Profit Trend&quot;,
+  col = &quot;darkgreen&quot;
+)</code></pre>
+<p><img src="/post/normalizing-data-an-analytical-trick-you-must-know-ar_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>كما ترى , يكاد من المستحيل ان نجد اي ترابط بين المتغيرين بالنظر فقط. الآن دعنا نحاول رسمهم في رسمة بيانية واحدة. ولكن قبل ان نفعل ذلك, الا تجده من الغير منطقي ان نرسم متغيرين ذو وحدات مختلفة في نفس الرسم البياني؟. هل نعيد تسمية وحدة المحور العمودي بالريال السعودي او بعدد السلع. المشكلة الأخرى وهي الأكثر اهمية هي ان الصفات المتغيرية في مستويات الإنتاج ذو وحدة القياس الكبيرة سوف تسحق الصفات المتغيرية في مستويات الارباح ذو وحدة القياس الصغيرة.</p>
+<p>هذا سوف يحول كل ما رأيناه من صعود وهبوط في مستويات الارباح إلى شبه خط مستقيم.</p>
+<p>خلينا نشوف إذا كان هذا الكلام صحيح ولا أنا جالس اتفلسف من راسي ههههه</p>
+<pre class="r"><code>yrange &lt;- range(min(profit, production), max(profit, production))
+
+plot(
+  production,
+  type = &quot;l&quot;,
+  xlab = &quot;Number of Days&quot; ,
+  ylab = &quot;SAR &amp; Units&quot;,
+  ylim = yrange,
+  col = &quot;purple&quot;,
+  main = &quot;Production &amp; Profits&quot;
+)
+
+lines(profit, col = &quot;darkgreen&quot;)</code></pre>
+<p><img src="/post/normalizing-data-an-analytical-trick-you-must-know-ar_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>بالضبط كما توقعنا. لاحظ خط الارباح كيف اصبح صغير وضئيل مقارنة بمستويات الإنتاج.</p>
+<p>لحل هذه المشكلة , دعنا نستدعي غرام الإحصائيين المعادلة الغنية عن التعريف z-score . سوف نحاول تطبيع البيانات بستخدام هذه المعادلة. لحسن الحظ R لديه دالة لطيفة وبسيطة تدعى scale() وهي تقوم بتطبيع جميع البيانات حسب المعادلة المذكورة. لكن قبل ان نستخدم هذه الدالة نريد ان نتأكد بأن ما تعلمناه عن z-score هو نفس ما تقوم به هذه الدالة. دعنا نختبر إذا ما كانت القيمة الأولى لمستويات الإنتاج بعد اكمال المعادلة, هي نفسها التي سيتنتجها لنا R. لنكتب هذا الكود التالي.</p>
+<pre class="r"><code>#Applying the formula of z-score
+(production[1] - mean(production)) / sd(production)</code></pre>
+<pre><code>## [1] 3.669554</code></pre>
+<pre class="r"><code>#the magic formula
+scale(production)[1]</code></pre>
+<pre><code>## [1] 3.669554</code></pre>
+<p>حسب التعريف للمعادلة كلا الكودين يعطينا نفس القيمة.</p>
+<p>ملاحظة هامشية: الدالة ()scale تقوم بتطبيع جميع البيانات, لذلك انا ارفقت بعد الدالة هذه القيمة [1] لأنني فقط مهتم بأول قيمة في مستويات الإنتاج.</p>
+<p>في حالتي انا حصلت على قيمة -0.3074291 . طبعا القيمة هذه قد تختلف عنك لإن البيانات تم خلقها عشوائية. ولكن المهم هو ان القيمة نفسها تنتج من كلا الكودين. هذه التجربة البسيطة تحققت من صحة فهمنا للمعادلة.</p>
+<p>خلينا نرجع إلى السيناريو الأول ونحاول رسم البيانات في رسمة بيانية واحدة ولكن بعد عملية التطبيع.</p>
+<p>إذا شغلنا الكود, سوف نرى بوضوح كيف يتحرك كل من الإنتاج والأرباح في رسمة بيانية واحدة حسب وحدة قياس موحدة.</p>
+<pre class="r"><code>scaled_profit &lt;- scale(profit)
+scaled_production &lt;- scale(production)
+
+yrange &lt;-
+  range(min(scaled_profit, scaled_production),
+        max(scaled_profit, scaled_production))
+plot(
+  scaled_production,
+  type = &quot;l&quot;,
+  xlab = &quot;Number of Days&quot; ,
+  ylab = &quot;SAR &amp; Units&quot;,
+  ylim = yrange,
+  col = &quot;purple&quot;,
+  main = &quot;Production &amp;Profits&quot;
+)
+lines(scaled_profit, col = &quot;darkgreen&quot;)</code></pre>
+<p><img src="/post/normalizing-data-an-analytical-trick-you-must-know-ar_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>الآن دعنا نتداول السيناريو الثاني. على خلاف مع المثال الأول, سوف نستخدم بيانات حقيقة تم تقشيرها من موقع تداول.للحصول على البيانات لهذا المثال انصحك باللإطلاع على مقالتي حول تقشير الويب و الحصول على الاكواد المطلوبة. لنفترض اننا مهتمين بمعرفة فيما إذا كانت اسعار بنك الرياض</p>
+<p>(ورمزها : 1010 ) تترابط في حركتها مع اسعار شركة سابك (ورمزها: 2010) خلال فترة شهرين ابريل و مايو من سنة ٢٠١٦.</p>
+<p>سوف نضع كل ما تعلمناه إلى الأن من خلال كتابة الكود التالي:</p>
+<pre class="r"><code>comp1 &lt;- getCompanyRecords(startDate = &quot;2016-04-01&quot;,
+                           endDate = &quot;2016-05-31&quot;,
+                           companySymbol = &quot;1010&quot;)
+
+comp2 &lt;- getCompanyRecords(startDate = &quot;2016-04-01&quot;,
+                           endDate = &quot;2016-05-31&quot;,
+                           companySymbol = &quot;2010&quot;)
+
+scaled_comp1 &lt;- scale(comp1$lastTradePrice)
+scaled_comp2 &lt;- scale(comp2$lastTradePrice)
+yrange &lt;- range(min(scaled_comp2, scaled_comp1),
+                max(scaled_comp2, scaled_comp1))
+
+plot(
+  scaled_comp1,
+  type = &quot;l&quot;,
+  xlab = &quot;Days&quot; ,
+  ylab = &quot;z-score&quot;,
+  ylim = yrange,
+  col = &quot;purple&quot;,
+  main = &quot;Riyad Bank &amp; Saudi Basic Industries Corp.&quot;
+)
+lines(scaled_comp2, col = &quot;darkgreen&quot;)
+
+legend(
+  length(scaled_comp1) * 0.75,
+  max(yrange) * 0.9,
+  legend = c(&quot;Riyad&quot;, &quot;Sabic&quot;),
+  col = c(&quot;purple&quot;, &quot;darkgreen&quot;),
+  lwd = c(1, 1)
+)</code></pre>
+<p><img src="/post/normalizing-data-an-analytical-trick-you-must-know-ar_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>هذا الرسم البياني يبين مدى ترابط اسعار الشركتين. بالإضافة إلى ذلك, يمكننا ان نرى مدى حدة تقلب الأسعار. كما هو في الرسم البياني, نرى ان شركة سابك اقل تقلباً من بنك الرياض. كذلك نرى ان هناك بعض الترابط ولكن ليس بصورة متطابقة.</p>
+<p>في الختام, هذا كل ما اردت ان اشارك فيه واتمنى انك استمتعت بقراءة هذا المقال. ولكن الأهم ان تكون قد تعلمت امور جديدة حول تطبيع البيانات واهميتها في تحليل البيانات. إذا كان لديك اي ملاحظات او اقتراحات أرجو انك ترسلها عبر قسم التعليقات وشكراً.</p>
+</div>

@@ -1,0 +1,19 @@
+{{ if ne .Site.Params.hideFooter true }}
+<footer id="footer" class="mt-auto text-center text-muted">
+    <div class="d-flex justify-content-center" >
+        <ul class="nav justify-content-center">
+            {{ range .Site.Params.social.contact }}
+            <li class="nav-item">
+                {{ $icon := printf "<i data-feather=\"%s\"></i>" .pre }}
+                <a class="nav-link active" href="{{ .link }}">{{ $icon | safeHTML }}</a>
+            </li>
+            {{ end }}
+
+        </ul>
+    </div>
+    <div>
+    <p class="text-center"> {{ .Site.Params.footerText | markdownify }} </p>
+    </div>
+    {{ partial "footer_custom.html" . }}
+</footer>
+{{ end }}
