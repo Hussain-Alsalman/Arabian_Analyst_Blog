@@ -1,0 +1,165 @@
+---
+author: Hussain
+comments: true
+date: 2018-03-27 20:00:59+00:00
+layout: post
+link: https://arabianAnalyst.com/2018/03/27/exploring-xbrl-world/
+slug: exploring-xbrl-world
+title: دخول عالم المال وبياناتها مع صيغة XBRL
+tags:
+- مهارة
+---
+
+
+
+<div class="section level3">
+<h3>مقدمة</h3>
+<p>في نظري احد اهم التحديات التي قد يواجهها محلل البيانات هي التعامل مع صيغ وتنسيقات مختلفة للبيانات. على سبيل المثال، وكالة ناسا للفضاء تستخدم صيغة netCDF وهي تنسيق خاص للبيانات قامت ناسا نفسها بتطويره لحفظ محتوى البيانات الفلكية وتعهدت بصيانته. أيضا من بين تلك الصيغ الخاصة، وهي أيضا محور هذا المقال، هي XBRL وهي اختصار لـ Extensible Business Reporting Language وهي صيغة قام بتطويرها تحالف دولي غير ربحي مكوّن من ٤٠٠ عضو. الهدف من هذه الصيغة هو تحسين عملية الإفصاح عن المعلومات المالية للشركات وجعل قوائمها المالية اكثر إفادة ودقة ومصداقية وفاعلية.</p>
+</div>
+<div id="-----xbrl" class="section level3">
+<h3>لماذا اهتم كمحلل للبيانات بصيغة XBRL؟</h3>
+<p>هناك مزايا وفوائد كثيرة لتعلم هذه الصيغة لا يسع هذا المقال تناولها كلها لكن سنكتفي ببعضها.</p>
+<p>1-تبني كثير من هيئات سوق المال حول العالم لهذه الصيغة. في كثير من الدول الآن تطالب الشركات المدرجة للتداول في السوق المالي برفع قوائمها المالية بإستخدام هذه الصيغة. مؤخرا، هيئة سوق المال السعودية</p>
+<p>2-تعلم صيغة XBRL مهارة تفتح لك باب عالم إدارة الأموال وتقييم الشركات ومقارنة ادائها بالنسبة للشركات الأخرى في نفس النشاط التجاري.</p>
+<p>3- تعلم صيغ مختلفة للبيانات يساعدك على تحسين خطوات سير عملك improve your workflow. لتكون لديك المرونة لاحقا للتعامل مع اَي نوع من البيانات.</p>
+</div>
+<div id="---xbrl" class="section level3">
+<h3>لمحة سريعة عن XBRL</h3>
+<p>من مستوى رفيع، تتكون صيغة XBRL الى قسمين رئيسين</p>
+<p>1- التصنيفات أو ما تعرف بـ XBRL Taxonomy. فذا القسم مسؤول عن مخطط المستندات المالية الذي بدوره يحتوي على تعاريف المفاهيم والمصطلحات التي من خلالها نقوم ببناء المستند. لتقريب الصورة, التصنيفات هي مثل كروكي أو مخطط البيت. في المخطط نعرف عدد الغرف و أسمائها وكذلك وظائفها.</p>
+<p>2- النموذج أو ما يعرف بـ XBRL Instance. النموذج يحتوي على جميع الحقائق المنشورة في التقارير المالية. بإختصار XBRL Instance هو المنتج الذي نصنعه وفق الشروط و المصطلحات الموجودة في قسم التصنيفات. لو نرجع لمثال مخطط البيت، النموذج هو البيت على ارض الواقع.</p>
+<p>بالتأكيد كل قسم يتفرع لعدة اقسام وكل منها له تفاصيل كثيرة لكن نكتفي بذكر كل منها والتعليق على اهميتها.</p>
+<p>اجزاء التصنيفات كالتالي</p>
+<p>1- مخطط التصنيفات Taxonomy Schemas : مجرد مخطط كما في ملفات XML يحوي على المصطلحات وتعريفاتها</p>
+<p>2- قواعد الوصل Linkbases ولها وظيفة مهمة جدا وهي ربط تلك المفاهيم والمصطلحات ببعضها البعض. يوجد ثلاث انواع من قواعد الربط وهي Presenation و Calculations و Definition سوف نستعرض اهميتها في المثال.</p>
+<p>اجزاء النموذج كالتالي</p>
+<p>1-المصادر References و المقصود بها هنا نقاط الرجوع إلى مصدر التصنيفات حيث أن كل عنصر من النموذج لابد أن يكون تحت حوكمة التصنيفات. سنتطرق لذلك في المثال.</p>
+<p>2- السياق Contexts وهو ما يعطي الحقاق معنى للمستخدم. على سبيل المثال , ١٠٠ دولار بحد ذاتها لا تعني شيء لكن وجودها في سياق قائمة الارباح لفترة معنية يضيف لها معنى.</p>
+<p>3-الوحدة Units الحقائق تختلف محفوظة بصيغ مختلفة فمنها بالآلاف ومنها بالملايين. الوحدة توضح لنا ايهما الآخر.</p>
+<p>4- الحقائق Facts هنا يتم حفظ كل الحقائق المذكورة في القوائم المالية.</p>
+<p>هناك اجزاء اخرى لا تهمنا في هذا المقال, لذلك سنكتفي هؤلاء الاربعة.</p>
+</div>
+<div id="-------2017" class="section level3">
+<h3>مثال عملي : حقائق شركة ابل المالية عام 2017</h3>
+<p>في البداية سنقوم بإرفاق بعض الحزم المهمة. ايضا سنقوم بإجراء بعض التعديلات على خيارات بيئة أر</p>
+<pre class="r"><code>#Installing the required packages.
+    #install.packages(c(&quot;XBRL&quot;, &quot;finreportr&quot;, &quot;stringr&quot;))
+    library(&quot;XBRL&quot;)
+    library(&quot;finreportr&quot;)
+    library(&quot;stringr&quot;)
+    #============================ Setting up some parameters =========================
+
+    #Setting up the downloading method
+    options(download.file.method = &quot;curl&quot;)
+
+    #Saving our current settings
+    original.options &lt;-options()
+
+    #Setting up the new options
+    new.options &lt;- options(stringsAsFactors = FALSE)</code></pre>
+<p>كذا تمام. التقرير الي راح نقوم بتحليله هو تقرير شركة ابل المالي لعام 2017 .لذلك قبل ما نبدأ نحتاج نتأكد أن التقرير هذا اصلا موجود. ولو موجود نحتاج برضو نستخرج الرابط الي ياخذنا للتقرير بشكل تلقائي</p>
+<pre class="r"><code>#===================Getting The links for our specified company  ==================
+
+#Inital Parameters
+Comp.tick &lt;- &quot;AAPL&quot;
+
+#Getting the available Annual reports for the JP Morgan  bank
+Annuals.list&lt;-AnnualReports(Comp.tick, foreign = FALSE)
+head(Annuals.list)</code></pre>
+<pre><code>##   filing.name filing.date         accession.no
+## 1        10-K  2018-11-05 0000320193-18-000145
+## 2        10-K  2017-11-03 0000320193-17-000070
+## 3        10-K  2016-10-26 0001628280-16-020309
+## 4        10-K  2015-10-28 0001193125-15-356351
+## 5        10-K  2014-10-27 0001193125-14-383437
+## 6        10-K  2013-10-30 0001193125-13-416534</code></pre>
+<p>اوكي تمام التقرير موجود, طيب خلينا نستخرج الرابط الآن</p>
+<pre class="r"><code>#Selecting the Type of record we would like to analyze
+Rec.no &lt;- 1
+
+#Extracting the CIK number
+cik &lt;- as.character(as.numeric(str_split(Annuals.list$accession.no[Rec.no], &quot;-&quot;)[[1]][1]))
+
+#Listing all the LINK available for the Annual reports
+cbind(paste0(&quot;https://www.sec.gov/Archives/edgar/data/&quot;,cik,&quot;/&quot;, Annuals.list$accession.no, &quot;-index.html&quot;), head(Annuals.list$filing.date)) %&gt;% head()</code></pre>
+<pre><code>##      [,1]                                                                            
+## [1,] &quot;https://www.sec.gov/Archives/edgar/data/320193/0000320193-18-000145-index.html&quot;
+## [2,] &quot;https://www.sec.gov/Archives/edgar/data/320193/0000320193-17-000070-index.html&quot;
+## [3,] &quot;https://www.sec.gov/Archives/edgar/data/320193/0001628280-16-020309-index.html&quot;
+## [4,] &quot;https://www.sec.gov/Archives/edgar/data/320193/0001193125-15-356351-index.html&quot;
+## [5,] &quot;https://www.sec.gov/Archives/edgar/data/320193/0001193125-14-383437-index.html&quot;
+## [6,] &quot;https://www.sec.gov/Archives/edgar/data/320193/0001193125-13-416534-index.html&quot;
+##      [,2]        
+## [1,] &quot;2018-11-05&quot;
+## [2,] &quot;2017-11-03&quot;
+## [3,] &quot;2016-10-26&quot;
+## [4,] &quot;2015-10-28&quot;
+## [5,] &quot;2014-10-27&quot;
+## [6,] &quot;2013-10-30&quot;</code></pre>
+<p>زي ما انت شايف لقينا الرابط. في الحقيقة هذا الرابط راح نستخدمه علشان نحصل رابط ملفات XBRL لذلك راح نحتاج ننسخ الرابط في المتصفح ونرجع برابط الملفات (انا عملت هذه الشغلة والرابط كما هو باين عندك تحت)</p>
+<pre class="r"><code>#Selecting the URL we are interested in
+url &lt;- &quot;https://www.sec.gov/Archives/edgar/data/320193/000032019317000070/aapl-20170930.xml&quot;</code></pre>
+<p>الحين يجي دور حزمة XBRL العظيمة. هذه الحزمة راح تعالج لنا البيانات بشكل جميل. هذه الحزمة تقوم بجمع كل البيانات من ملفات XBRL ووضعها في هيكلة بيانات مجدولة</p>
+<pre class="r"><code>#=================== Starting the XBRL files Analysis =========================
+
+#Analzying the XBRL files ### THIS MAY TAKE LONG TIME ####
+xbrl_data &lt;- xbrlDoAll(url, cache.dir = &quot;XBRLcache/&quot;, prefix.out = NULL, delete.cached.inst = TRUE)</code></pre>
+<p>ما حلصنا عليه في المتغير xbrl_data هو مجموعة من الجداول تمثل ما سبق وتحدثنا عنه حول اقسام واجزاء صيغة XBRL لعل هذه الصورة توضح ما لدينا</p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/bergant/XBRLFiles/master/img/xbrl_files.png" />
+
+</div>
+<p>بفضل هذه الحزمة العجيبة اصبح بإمكاننا التنقل بين عناصر هذه الصيغة بكل سهولة. بل بإستعانة بحزمة dplyr اصبح لدينا القدرة على صنع استعلامات شبيه بأوامر SQL للحصول عل ما نريد</p>
+<p>لنفترض أننا نريد الحصول على مبيعات ابل خلال الثلاث سنوات الماضية. يمكننا فعل ذلك بكل سهولة عبر الكود التالي</p>
+<pre class="r"><code>#Loading Some Data minupliating libraries
+library(dplyr)
+library(tidyr)
+
+SalesRevenueNet&lt;-xbrl_data$element %&gt;%
+    filter(elementId==&quot;us-gaap_SalesRevenueNet&quot; ) %&gt;%
+    left_join(xbrl_data$fact, by =  &quot;elementId&quot;) %&gt;% left_join(xbrl_data$context, by =&quot;contextId&quot;) %&gt;%
+    left_join(xbrl_data$label, by = &quot;elementId&quot;) %&gt;%  left_join(xbrl_data$unit, by =&quot;unitId&quot;) %&gt;%
+    filter(is.na(dimension1) &amp; grepl(&quot;4YTD&quot;, contextId) &amp; labelRole ==&quot;http://www.xbrl.org/2003/role/label&quot;) %&gt;%
+    select(labelString, contextId, fact)
+
+SalesRevenueNet
+
+##    labelString   contextId         fact
+## 1 Revenue, Net FD2015Q4YTD 233715000000
+## 2 Revenue, Net FD2016Q4YTD 215639000000
+## 3 Revenue, Net FD2017Q4YTD 229234000000</code></pre>
+<p>كذلك يمكننا ايضا الحصول على تكاليف تلك المبيعات بكود مشابه</p>
+<pre class="r"><code>CostOfGoodsSold&lt;-xbrl_data$element %&gt;%
+      filter(elementId==&quot;us-gaap_CostOfGoodsAndServicesSold&quot; ) %&gt;%
+      left_join(xbrl_data$fact, by =  &quot;elementId&quot;) %&gt;% left_join(xbrl_data$context, by =&quot;contextId&quot;) %&gt;%
+      left_join(xbrl_data$label, by = &quot;elementId&quot;) %&gt;%  left_join(xbrl_data$unit, by =&quot;unitId&quot;) %&gt;%
+      filter(is.na(dimension1) &amp; labelRole ==&quot;http://www.xbrl.org/2003/role/label&quot;)  %&gt;%
+      select(labelString, contextId, fact)
+
+CostOfGoodsSold
+
+##                       labelString   contextId         fact
+## 1 Cost of Goods and Services Sold FD2015Q4YTD 140089000000
+## 2 Cost of Goods and Services Sold FD2016Q4YTD 131376000000
+## 3 Cost of Goods and Services Sold FD2017Q4YTD 141048000000</code></pre>
+</div>
+<div id="------" class="section level3">
+<h3>طريقة مبتكرة لكشف قواعد الوصل بين العناصر</h3>
+<p>سبق وذكرنا ان صيغة XBRL تحوي بجعبتها علاقة كل عنصر بالآخر بما يتوافق مع دورهم في القوائم المالية</p>
+<p>لتبسيط هذه الفكرة , لنأخذ قائمة الارباح على سبيل المثال. في هذه القائمة نتوقع أن تكون الأرباح هي العامل المشترك بين كل العناصر المساهمة لصنع تلك القائمة. بمعنى أخر, للحصول على صافي الارباح نحتاج إلى ان نقوم بعملية طرح بين المبيعات والتكاليف على سبيل المثال.</p>
+<p>بدل من صنع القائمة ذاتها قررت أن اصور تلك العلاقات على هيئة علاقة شبكية. خلينا ننتقل إلى الكود, النتائج بصراحة جميلة</p>
+<pre class="r"><code>#Financial Statement Role
+role_Id &lt;- &quot;http://www.apple.com/role/ConsolidatedStatementsOfOperations&quot;
+# Visualizing The calculation stracture of the financial statements
+library(igraph)
+doc.graph &lt;-xbrl_data$calculation[which(xbrl_data$calculation$roleId == role_Id ),c(&quot;fromElementId&quot;, &quot;toElementId&quot;)]
+doc.viz &lt;- graph.data.frame(doc.graph)
+plot.igraph(doc.viz, vertex.label.color =&quot;black&quot;, vertex.label.cex = .5 ,vertex.color = &quot;Navyblue&quot;, layout = layout.reingold.tilford)</code></pre>
+<p><br />
+<img src="https://arabiananalyst.com/wp-content/uploads/2018/03/Financial-Statements.png" /></p>
+<p>وفقط للحماس هذه قائمة الأصول</p>
+<div class="figure">
+<img src="http://arabianAnalyst.com/wp-content/uploads/2018/03/BalanceSheet.png" />
+
+</div>
+</div>

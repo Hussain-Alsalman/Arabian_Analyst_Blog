@@ -1,0 +1,160 @@
+---
+author: Hussain
+comments: true
+date: 2017-11-22 20:02:24+00:00
+layout: post
+link: https://arabianAnalyst.com/2017/11/22/interactive-map-saudi-imports/
+slug: interactive-map-saudi-imports
+title: 'فكرة عابرة : خريطة تفاعلية لواردات المملكة'
+tags:
+- جيوغرافي
+- مهارة
+---
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+
+احد اسرار عشقي للغة الـ R هو شعوري بأنه لا يوجد حد لما استطيع فعله بهذه اللغة الرائعة. اليوم سوف استعرض لكم احد تلك الإمكانيات الا وهي صنع تصويرات بيانية تفاعلية. نعم لقد قرأت تلك الجملة بشكل صحيح. R بإمكانه أن يكون تفاعلي. في الحقيقة هناك الكثير من الحزم التي تمكننا من فعل ذلك لكنني لن استعرضها كلها فذلك يستحق كتاب بذاته.
+
+
+
+### حركة الـ HTMLWIDGETS
+
+
+مؤخرا انتشرت حركة في وسط مجتمع مطوري حزم لغة R خصوصا المهتمين بالتصوير البياني. تلك الحركة تهدف إلى جلب قوة Java Script الرائعة في صنع مختلف الرسومات والتصويرات البيانية على صفحات الويب و ترويضها لتعمل بتناغم تام مع لغة R . تلك الحركة انجبت لنا ما يعرف الآن بـ [HTMLWIDGETS](https//www.htmlwidgets.com)
+
+
+
+#### مثال واردات المملكة
+
+
+دعنا نحاول ان نمثل واردات المملكة على خريطة تفاعلية حيث يمكننا التصغير و التكبير وحتى سحب الخريطة نفسها. سنقوم بذلك عن طريق اتباع الخطوات التالية :
+
+
+
+  1. تحميل المعلومات من موقع [هيئة الإحصاء](https://www.stats.gov.sa/ar/214)
+
+
+```{r} 
+library("here")
+file_path <- here("static", "data", "Saudi_Imports.csv")
+sa.imp <-read.csv(file_path, sep = ",", header = TRUE )
+
+```
+
+
+
+  2. إرفاق بعض الحزم المهمة
+
+
+
+```{r}    
+library("dplyr") # لمعالجة البيانات
+library("stringi") # حزمة متخصصة لمعالجة النصوص
+library("leaflet") # لرسم الخرائط التفاعلية
+library("sp") # حزمة مساعدة للرسم على الخرائط
+library("maps") # معلومات عن الدول وعواصمها
+library("widgetframe")
+```
+
+
+
+
+  3. حساب مجموع قيمة الواردات إلى المملكة
+
+
+
+```{r}    
+grouped.imports <- sa.imp %>%
+                   group_by(Country.Name) %>%
+                   summarise(grand.total = sum(Value))
+```
+
+
+
+
+
+  4. كتابة دالة لإستخراج احداثيات عاصمة اي دولة
+
+
+
+
+  * نحتاج هذه العملية لرسم الخطوط بين المملكة وباقي الدول و لأن بعض الدول كبيرة جدا يتوجب علينا تحديد بداية كل خط
+
+
+  * لذلك اخترنا بداية الخط لتكون العاصمة في تلك الدول
+
+
+
+```{r}    
+get.capital.location <- function(c.n) {
+      x <-filter(world.cities, country.etc == c.n, capital == 1)
+      return(x[,5:4])
+    }
+```
+
+
+
+
+
+  5. معالجة الأسماء الموجودة في البيانات من هيئة الإحصاء لتتوافق مع حزمة maps
+
+
+
+```{r}    
+ds<-sapply(stri_trans_totitle(grouped.imports$Country.Name),get.capital.location)
+ds.1 <- t(ds)
+```
+
+  6. معالجة بعض اسماء الدول يدويا
+
+
+```{r}
+ds.1["United Kingdom",] <- get.capital.location("UK")
+ds.1["U.s.a",] <- get.capital.location("USA")
+ds.1["Sultanate Of Oman",] <- get.capital.location("Oman")
+ds.1["Russian Federation",] <- get.capital.location("Russia")
+ds.1[,1]<-as.numeric(as.character(ds.1[,1]))
+ds.1[,2]<-as.numeric(as.character(ds.1[,2]))
+ds.c <- matrix(unlist(ds.1), ncol = 2)
+rownames(ds.c) <-rownames(ds.1)
+ds.c <- ds.c[!is.na(ds.c[,1]),]
+```
+
+
+
+
+
+  7. كتابة دالة متخصص في ربط كل إحداثية عاصمة بالرياض
+
+
+
+```{r}
+creat.line2sa <- function(x) {
+  return(Line(rbind(
+    get.capital.location("Saudi Arabia"), x, make.row.names = TRUE
+    )))
+
+}
+```
+
+
+
+  8. إعداد قائمة الخطوط ومعالجتها لتكون جاهزة للتصوير الجيوغرافي
+
+
+
+```{r}
+lines.list <-lapply(seq_along(ds.c[,1]), function(inex, x) {(creat.line2sa(ds.c[inex,]))}, x=ds.c)
+```
+
+
+  9. اخيرا رسم الخريطة التفاعلية مع جميع خطوط واردات المملكة
+
+
+```{r}
+mapp<-leaflet() %>% addTiles()  %>% addPolylines(data =SpatialLines(list(Lines(lines.list, "ID"))))
+frameWidget(mapp, height = 350, width = '95%')
+```

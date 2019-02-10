@@ -11,30 +11,15 @@ categories:
 - دروس
 ---
 
-
-
-
-
-
-
-
 حساب المدونة في تويتر تم انشاءه منذ فترة وجيزة جداً. لكن في يوم ٢٥ يونيو ٢٠١٦ ٫حدث ارتفاع غير معتاد في عدد المتابعين لحساب التويتر الخاص بالمدونة. ظللت اتلقى الكثير من الإشعارات بالبريد الإلكتروني لكل متابع جديد. الفكرة الأول التي كانت لدي هي ان اسرع إلى اعدادت تويتر وآقوم بتعطيل خاصية الإشعارات. لكن بعد حين استوعبت ان هذه الرسائل مليئة بالبيانات المهمة والتي بالإمكان تحليلها.
 
 هناك الكثير من الأدوات لتحليل وتصوير حركة المتابعين في تويتر بما في ذلك أداة تويتر التحليلية الخاصة بتويتر نفسه [Twitter Analytics](https://analytics.twitter.com/) . إذا كنت جديد العهد مع R، فإنني اوصيك باستخدام هذه الأداة السهلة. أما إن كنت من محبي لغة R تابع القراءة إلى نهاية المقال لمعرفة كيف يمكنك تحليل حركة المتابعين عن طريق الـ R.
-
-
-
 
 
 #### Twitter Analytics
 
 
 هي أداة قوية تم تصميمها بواسطة تويتر لتحليل معلومات وبيانات تويتر. بالإضافة إلى ذلك، فإن هذه الاداة توفر الكثير من المعلومات المثيرة للاهتمام مثل (عدد الأشخاص الذين شاهدوا التغريدات الخاصة بك)، ومستوى المشاركة (النقرات، والردود والإعجاب) وأكثر من ذلك بكثير. حتى لو كنت مهووس بـ R، انصح حقا بتجريب هذه الاداة. الجدير بالذكر هو انه بإمكانك تنشيطها واستخدامها بكل سهولة ويسر. اذهب إلى [Twitter Analytics](https://analytics.twitter.com/) و قم بتنشيطها. سترى في الجزء العلوي من الشاشة عدة علامات تبويب كالرئيسية، والتغريدات، والجماهير، والأحداث. كل علامة تبويب تعطيك معلومات مثيرة للاهتمام حول حسابك.
-
-
-
-
-
 
 
 
@@ -48,12 +33,6 @@ categories:
 
 
 
-
-
-
-
-
-
 #### القسم الأول : إعداد حساب Gmail الخاص بك
 
 
@@ -61,16 +40,16 @@ categories:
 
 
 
- 	
+
   1. تسجيل الدخول حساب Gmail الخاص بك
 
- 	
+
   2. انتقل إلى إعدادات عن طريق النقر على “رمز الترس” ثم حدد “إعدادات” من القائمة المنسدلة
 
- 	
+
   3. انقر على “إعادة التوجيه و POP / IMAP” علامة التبويب
 
- 	
+
   4. تمكين IMAP من قسم “IMAP الوصول”
 
 
@@ -81,16 +60,7 @@ _تحذير: هذا قد يجعل حسابك أكثر عرضة لهجمات قر
 
 
 
-
-
-
-
-
 #### القسم الثاني: تحليل البيانات
-
-
-
-
 
 
 
@@ -99,66 +69,51 @@ _تحذير: هذا قد يجعل حسابك أكثر عرضة لهجمات قر
 
 والآن بعد أن اصبح حساب Gmail لدينا جاهز. دعنا نمضي في كتابة بعض الكودات الرهيبة. سنبدأ اولا بتثبيت الحزمة وإرفاقها. الكود هو كالتالي:
 
-    
-    <code class="hljs">install.packages(<span class="hljs-string">"edeR"</span>)</code>
-
-
-
-    
-    <code class="hljs"><span class="hljs-keyword">library</span>(<span class="hljs-string">"edeR"</span>)</code>
-
+```{r}
+    install.packages("edeR")
+    library("edeR")
+```
 
 انيا، سوف نستخدم الدالة ()extractKeywordB. هذه الدالة سوف تمكننا من استخراج كافة رسائل البريد الإلكتروني استنادا إلى الكلمة محددة في نص الرسالة. من اجل ذلك، فهو من المهم أن نختار كلمة فريدة ومذكورة فقط في رسائل الإشعارات. من اجل تبسيط مهمتتنا سوف اقوم بختيار كلمة “follower”. هنا ايضا بعض القيم نحتاج إلى تزويدها في الدالة.
 
 
 
- 	
+
   * user: يمكنك وضع عنوان البريد الإلكتروني بالكامل هنا.
 
- 	
+
   * password: يمكنك كتابة كلمة المرور الخاصة بك هنا.
 
- 	
+
   * Kw: يمكنك تحديد الكلمة التي تريد استخدامها هنا.
 
- 	
+
   * nmail: يمكنك إما تحديد عدد من رسائل البريد الإلكتروني التي ترغب في استرداد أو ضع -1 للحصول على جميع رسائل البريد الإلكتروني.
 
 
 
-    
-    <code class="hljs">db <- extractKeywordB(username = <span class="hljs-string">"arabianAnalyst@gmail.com"</span>, password = <span class="hljs-string">"XXXXXXXXX"</span>, kw = <span class="hljs-string">"followers"</span>, nmail = -<span class="hljs-number">1</span>)</code>
-
+```{r}
+    db <- extractKeywordB(username = "arabianAnalyst@gmail.com", password = "XXXXXXXXX", kw = "followers", nmail = -1)
+```
 
 ملاحظة جانبية: هذه العملية قد تستغرق بعض الوقت اعتمادا على عدد من رسائل البريد الإلكتروني لديك.
 
 هذه الدالة سوف تقوم بإرجاع قائمة ذو متغيرين. المتغير الأول يحوي عدد الرسائل التي نجحت الدالة من استخراجها. والمتغير الثاني يتحوي على البيانات. وبما أننا مهتمون فقط في البيانات، سوف نقوم بإنشاء متغير لتخزين البيانات بشكل منفصل.
 
-    
-    <code class="hljs">dos <- db$data</code>
-
-
-
-
-
-
-
-
-
-
-
-
+```{r}    
+    dos <- db$data
+```
 
 #### تجهيز وتنسيق البيانات
 
 
 حتى الآن ما قمنا به هو عمل رائع. كل ما علينا القيام به الآن هو تحويل عمود التواريخ إلى صيغة يتعرف عليها R، ثم سنكون على استعداد تام لرسم نتائجنا. للقيام بذلك، سوف نقوم بكاتبة هذا الكود اللطيف.
 
-    
-    <code class="hljs">dataDates <- as.POSIXlt(dbs$email_date, format = <span class="hljs-string">"%a, %d %b %Y %H:%M:%S %z"</span>, tz= Sys.timezone())
-    dataDates <- sort(dataDates)</code>
+```{r}    
+    dataDates <- as.POSIXlt(dbs$email_date, format = "%a, %d %b %Y %H:%M:%S %z", tz= Sys.timezone())
+    dataDates <- sort(dataDates)
 
-
+```
 لاحظ أنني أيضا رتبت التواريخ لضمان أن تكون مبنية على الترتيب الزمني.
 
 
@@ -174,20 +129,13 @@ _تحذير: هذا قد يجعل حسابك أكثر عرضة لهجمات قر
 
 دعنا الآن نرى مدى ارتفاع القفزة في عدد المتابعين
 
-    
-    <code class="hljs">plot(dataDates, <span class="hljs-number">1</span>:length(dataDates), xlab = <span class="hljs-string">""</span>, ylab= <span class="hljs-string">"followers"</span> , col = <span class="hljs-string">"darkblue"</span>, type = <span class="hljs-string">"l"</span>, main = <span class="hljs-string">"Followers Growth"</span>)</code>
-
+```{r}
+    plot(dataDates, 1:length(dataDates), xlab = "", ylab= "followers" , col = "darkblue", type = "l", main = "Followers Growth")
+```
 
 [![](http://arabianAnalyst.com/wp-content/uploads/2017/11/layeredmultichart-300x180.png)](http://arabianAnalyst.com/wp-content/uploads/2017/11/layeredmultichart.png)
 
 يمكننا رؤية الازدياد في عدد المتابعين بتسارع أُسي خلال فترة 24 يونيو - 26 يونيو.
-
-
-
-
-
-
-
 
 
 #### مزيد من التحقيقات
@@ -201,137 +149,129 @@ _تحذير: هذا قد يجعل حسابك أكثر عرضة لهجمات قر
 
 
 
- 	
+
   * المتابعون
 
- 	
+
   * الذكر
 
- 	
+
   * إعادة تغريد
 
 
 الكود سوف يكون كالتالي
 
-    
-    <code class="hljs"><span class="hljs-comment"># Extracting The email Information Based on Keywords</span>
-    <span class="hljs-comment">#Based on keyword "Followers"</span>
+```{r}    
+    # Extracting The email Information Based on Keywords
+    #Based on keyword "Followers"
     dbf <-
       extractKeywordB(
-        username = <span class="hljs-string">"arabianAnalyst@gmail.com"</span>,
-        password = <span class="hljs-string">"XXXXXXXXXXX"</span>,
-        kw = <span class="hljs-string">"follower"</span>,
-        nmail = -<span class="hljs-number">1</span>
+        username = "arabianAnalyst@gmail.com",
+        password = "XXXXXXXXXXX",
+        kw = "follower",
+        nmail = -1
       )
-    <span class="hljs-comment">#Based on keyword "Mentioned"</span>
+    #Based on keyword "Mentioned"
     dbm <-
       extractKeywordB(
-        username = <span class="hljs-string">"arabianAnalyst@gmail.com"</span>,
-        password = <span class="hljs-string">"XXXXXXXXXXX"</span>,
-        kw = <span class="hljs-string">"mentioned"</span>,
-        nmail = -<span class="hljs-number">1</span>
+        username = "arabianAnalyst@gmail.com",
+        password = "XXXXXXXXXXX",
+        kw = "mentioned",
+        nmail = -1
       )
-    <span class="hljs-comment">#Based on keybord "Retweeted"</span>
+    #Based on keybord "Retweeted"
     dbRT <-
       extractKeywordB(
-        username = <span class="hljs-string">"arabianAnalyst@gmail.com"</span>,
-        password = <span class="hljs-string">"XXXXXXXXXXX"</span>,
-        kw = <span class="hljs-string">"retweeted"</span>,
-        nmail = -<span class="hljs-number">1</span>
+        username = "arabianAnalyst@gmail.com",
+        password = "XXXXXXXXXXX",
+        kw = "retweeted",
+        nmail = -1
       )
-    <span class="hljs-comment">#Extracting only the Email information from the list</span>
+    #Extracting only the Email information from the list
     dbFollow <- dbf$data dbMention <- dbm$data dbRetweet <- dbRT$data
-    <span class="hljs-comment">#FUNCTION: Convertes Dates from String to POISXlt tpye and return them sorted.</span>
-    dateConvertor <- <span class="hljs-keyword">function</span> (thedata) {
-      <span class="hljs-comment">#Converting the Dates from String to POISXlt tpye.</span>
+    #FUNCTION: Convertes Dates from String to POISXlt tpye and return them sorted.
+    dateConvertor <- function (thedata) {
+      #Converting the Dates from String to POISXlt tpye.
       dataDates <-
-        as.POSIXlt(thedata$email_date, format = <span class="hljs-string">" %a, %d %b %Y %H:%M:%S %z"</span>, tz = Sys.timezone())
-      <span class="hljs-comment">#Sorting the Data</span>
-      dataDates <- sort(dataDates) <span class="hljs-keyword">return</span>(dataDates)
+        as.POSIXlt(thedata$email_date, format = " %a, %d %b %Y %H:%M:%S %z", tz = Sys.timezone())
+      #Sorting the Data
+      dataDates <- sort(dataDates) return(dataDates)
     }
-    <span class="hljs-comment">#Storing The times of following, mentioning and retweeting in specific variables</span>
+    #Storing The times of following, mentioning and retweeting in specific variables
     followTime <- dateConvertor(dbFollow)
     retweetTime <- dateConvertor(dbRetweet)
-    mentionTime <- dateConvertor(dbMention)</code>
-
+    mentionTime <- dateConvertor(dbMention)
+```
 
 للحصول على صورة اوضح حول البيانات سوف نلخصها في جدول قابل للقراءة. انا افضل استخدام دالة ()table. هذه الدالة عادة ما تعمل بشكل أفضل مع المتغيرات النوعية. ولذلك، فإنني سوف اقوم بجمع تواريخ الرسائل إلى ايام من الاسبوع
 
-    
-    <code class="hljs"><span class="hljs-comment">#creating a custom column to group dates by days. </span>
-    days <- strftime(followTime, format = <span class="hljs-string">"%a, %d %b"</span>) 
-    dbsExted <- cbind(dbFollow, days)</code>
-
+```{r}    
+#creating a custom column to group dates by days.
+days <- strftime(followTime, format = "%a, %d %b")
+dbsExted <- cbind(dbFollow, days)
+```
 
 لاحظ أنني قد اضفت عامود “days” لإطار البيانات باستخدام الدالة ()cbin. الآن بإمكاننا تلخيص المعلومات بشكل اوضح عبر الكود التالي
 
-    
-    <code class="hljs">table(dbsExted$days,dbsExted$email_from)</code>
-
+```{r}    
+table(dbsExted$days,dbsExted$email_from)
+```
 
 [![](http://arabianAnalyst.com/wp-content/uploads/2017/11/Followers-Summary-300x229.png)](http://arabianAnalyst.com/wp-content/uploads/2017/11/Followers-Summary.png)
 
 وكما نرى، كان هناك عدد كبير من المتابعين في 25 يونيو.
 
 
-
-
-
-
-
-
-
 #### تحديد هوية المسوّق أو المروّج
-
 
 ن الأشياء المفيدة من تلخيص البيانات هو الحصول على أدلة آو تلميحات حول الوجهة او الخطوة القادمة والمناسبة في التحليل. في الواقع، في مثالنا الحالي، هناك دليل قوي على أن هناك شيء يستحق التحقيق حوله في كل من يومي الاثنين 20 يونيو والسبت 25 يونيو.
 
 إحدى الطرق المستخدمة في تقصي الاحداث الزمنية هي رسم كل الأحداث في رسم بياني كنقاط ذو طبقات متعدد. وبالإضافة إلى ذلك، يمكننا تلوين هذه النقاط لتعزيز الوضوح. الكود هو كالتالي
 
-    
-    <code class="hljs">plot(
-      followTime,
-      <span class="hljs-number">1</span>:length(followTime),
-      xlab = <span class="hljs-string">""</span>,
-      ylab = <span class="hljs-string">"followers"</span> ,
-      col = <span class="hljs-string">"darkblue"</span>,
-      type = <span class="hljs-string">"l"</span>,
-      main = <span class="hljs-string">"Followers Growth"</span>
-    ) points(mentionTime, rep(<span class="hljs-number">20</span>, length(mentionTime)), col = <span class="hljs-string">"darkgreen"</span>, pch = <span class="hljs-number">1</span>) points(retweetTime, rep(<span class="hljs-number">30</span>, length(retweetTime)), col = <span class="hljs-string">"darkred"</span>, pch = <span class="hljs-number">2</span>) legend(
-      followTime[<span class="hljs-number">1</span>],
-      length(followTime) * <span class="hljs-number">0.8</span>,
-      c(<span class="hljs-string">"mentions"</span>, <span class="hljs-string">"retweets"</span>, <span class="hljs-string">"followers"</span>),
-      pch = c(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-literal">NA</span>),
-      lty = c(<span class="hljs-literal">NA</span>, <span class="hljs-literal">NA</span>, <span class="hljs-number">1</span>),
-      col = c(<span class="hljs-string">"darkgreen"</span>, <span class="hljs-string">"darkred"</span>, <span class="hljs-string">"darkblue"</span>)
-    )</code>
-
+```{r}    
+plot(
+  followTime,
+  1:length(followTime),
+  xlab = "",
+  ylab = "followers" ,
+  col = "darkblue",
+  type = "l",
+  main = "Followers Growth"
+) points(mentionTime, rep(20, length(mentionTime)), col = "darkgreen", pch = 1) points(retweetTime, rep(30, length(retweetTime)), col = "darkred", pch = 2) legend(
+  followTime[1],
+  length(followTime) * 0.8,
+  c("mentions", "retweets", "followers"),
+  pch = c(1, 2, <span class="hljs-literal">NA),
+  lty = c(<span class="hljs-literal">NA, <span class="hljs-literal">NA, 1),
+  col = c("darkgreen", "darkred", "darkblue")
+)
+```
 
 [![](http://arabianAnalyst.com/wp-content/uploads/2017/11/layeredmultichart-300x180.png)](http://arabianAnalyst.com/wp-content/uploads/2017/11/layeredmultichart.png)
 
 في الرسم البياني أعلاه يظهر أن أول قفزة صغيرة في عدد المتابعين ربما كانت بسبب إعادة تغريدة. أما القفزة الثانية وهي الكبيرة فالسبب ليس واضحاً فيما إذا كانت بسبب ذكر من شخص معين او إعادة تغريدة. لذلك سوف نركز تحليلنا على هذه القفزة والتي تصادف ٢٥ يونيو.
 
-    
-    <code class="hljs">follow25th <-
-      followTime[which(strftime(followTime, format = <span class="hljs-string">"%d"</span>) == <span class="hljs-string">"25"</span>)]
-    mention25th <-
-      mentionTime[which(strftime(mentionTime, format = <span class="hljs-string">"%d"</span>) == <span class="hljs-string">"25"</span>)]
-    retweet25th <-
-      retweetTime[which(strftime(retweetTime, format = <span class="hljs-string">"%d"</span>) == <span class="hljs-string">"25"</span>)]
-    plot(
-      retweet25th,
-      rep(<span class="hljs-number">15</span>, length(retweet25th)),
-      col = <span class="hljs-string">"darkred"</span>,
-      pch = <span class="hljs-number">2</span>,
-      ylim = range(<span class="hljs-number">0</span>, <span class="hljs-number">20</span>),
-      main = <span class="hljs-string">"June 25th timeline"</span>,
-      xlab = <span class="hljs-string">"time"</span>,
-      yaxt = <span class="hljs-string">"n"</span>,
-      ylab = <span class="hljs-string">""</span>
-    )
-    points(mention25th, rep(<span class="hljs-number">10</span>, length(mention25th)), col = <span class="hljs-string">"darkgreen"</span>, pch = <span class="hljs-number">1</span>)
-    points(follow25th, rep(<span class="hljs-number">5</span>, length(follow25th)), col = <span class="hljs-string">"darkblue"</span>, pch = <span class="hljs-number">0</span>)</code>
-
+```{r}
+follow25th <-
+  followTime[which(strftime(followTime, format = "%d") == "25")]
+mention25th <-
+  mentionTime[which(strftime(mentionTime, format = "%d") == "25")]
+retweet25th <-
+  retweetTime[which(strftime(retweetTime, format = "%d") == "25")]
+plot(
+  retweet25th,
+  rep(15, length(retweet25th)),
+  col = "darkred",
+  pch = 2,
+  ylim = range(0, 20),
+  main = "June 25th timeline",
+  xlab = "time",
+  yaxt = "n",
+  ylab = ""
+)
+points(mention25th, rep(10, length(mention25th)), col = "darkgreen", pch = 1)
+points(follow25th, rep(5, length(follow25th)), col = "darkblue", pch = 0)
+```
 
 [![](http://arabianAnalyst.com/wp-content/uploads/2017/11/Timeline-300x150.png)](http://arabianAnalyst.com/wp-content/uploads/2017/11/Timeline.png)
 
@@ -341,18 +281,10 @@ _تحذير: هذا قد يجعل حسابك أكثر عرضة لهجمات قر
 
 للكشف عن هوية المسوق الرائع. يمكننا أن نذهب إلى حساب بريدنا الإلكتروني و التحقق من الذي كان أول من ذكرنا بعد 6:00pm. أو يمكننا أن نفعل ذلك باستخدام R العجيب. الكود كالتالي.
 
-    
-    <code class="hljs">dbMention[which(strftime(mentionTime, format = <span class="hljs-string">"%H"</span>) > <span class="hljs-string">"18"</span>)[<span class="hljs-number">1</span>],<span class="hljs-string">"email_subj"</span>]
-    <span class="hljs-comment">#"Subject: Fahad Alhazmi (@fahd09) mentioned you in conversation on Twitter!"</span></code>
-
-
-
-
-
-
-
-
-
+```{r}    
+dbMention[which(strftime(mentionTime, format = "%H") > "18")[1],"email_subj"]
+#"Subject: Fahad Alhazmi (@fahd09) mentioned you in conversation on Twitter!"
+```
 
 #### النتائج
 
@@ -360,25 +292,7 @@ _تحذير: هذا قد يجعل حسابك أكثر عرضة لهجمات قر
 وفقا لتحليلنا، كان الحدث المسؤول الذي تسبب في هذا التدفق من المتابعين هو [الذكر](https://twitter.com/fahd09/status/746864690240815104) الذي كتبه [فهد الحازمي](https://twitter.com/fahd09) في 08:20 (التوقيت الشرقي للولايات المتحدة). بما ان المستخدم يقطن في منطقة زمنية مختلفة، هذا الحدث كان في حوالي الساعة 12:20 من صباح يوم 26 حسب وقت المسوق. لذلك، أعطي شكر خاص إلى فهد لدعمه حسابنا على تويتر و والموقع كذلك.
 
 
-
-
-
-
-
-
-
 #### ملخص
 
 
 في هذه المقالة ناقشنا مختلف الأدوات المتاحة لمتابعة وتحليل المتابعين في تويتر. بالإضافة إلى ذلك، فلقد استخدمنا البريد الإلكتروني لدينا كمصدر للبيانات و لتتبع كل الأحداث على حساب تويتر لدينا. وأخيرا، أجرينا تحليلا دقيقا لتحديد نقطة التحول الغير اعتيادية لنمو عدد المتابعين لدينا ومعرفة سبب هذا الحدث.
-
-
-
-
-
-
-
-
-
-
-

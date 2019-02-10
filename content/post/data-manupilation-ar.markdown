@@ -91,25 +91,10 @@ categories:
 
 
 
-    
-    <code class="hljs">oil.prices.w <- read.csv(<span class="hljs-string">"oil_prices.csv"</span>, header = <span class="hljs-literal">TRUE</span>)
-    oil.prices.w</code>
-
-
-
-    
-    <code class="hljs">##    U.K. Mexico U.A.E.  Oman
-    ## 1 62.10  56.30  55.60 53.11
-    ## 2 63.20  59.45  54.22 52.90
-    ## 3 55.80  60.02  53.18 53.75
-    ## 4 56.90  60.00  56.12 54.10
-    ## 5 61.20  58.75  60.01 59.03
-    ## 6 60.18  59.13  53.20 52.35
-    ## 7 60.90  53.30  54.00 52.80
-    ## 8 61.12  60.17  55.19 54.95</code>
-
-
-
+```{r}
+oil.prices.w <- read.csv("oil_prices.csv", header = TRUE)
+oil.prices.w
+```
 
 يطلق على هذا التنسيق من البيانات بالتنسيق العرضي لأن البيانات مدرجة تحت اكثر من عامود مما يسبب لنا بعض المشاكل خصوصا عندما نتعامل مع دوال آر التي تتطلب التنسيق الطولي كما سبق وذكرنا
 
@@ -120,115 +105,30 @@ categories:
 
 
 
-    
-    <code class="hljs">oil.prices.t <- stack(oil.prices.w, select =c(U.K., Mexico, U.A.E., Oman))
-    colnames(oil.prices.t) <- c(<span class="hljs-string">"prices"</span>, <span class="hljs-string">"countries"</span>)
-    oil.prices.t</code>
-
-
-
-    
-    <code class="hljs">##    prices countries
-    ## 1   62.10      U.K.
-    ## 2   63.20      U.K.
-    ## 3   55.80      U.K.
-    ## 4   56.90      U.K.
-    ## 5   61.20      U.K.
-    ## 6   60.18      U.K.
-    ## 7   60.90      U.K.
-    ## 8   61.12      U.K.
-    ## 9   56.30    Mexico
-    ## 10  59.45    Mexico
-    ## 11  60.02    Mexico
-    ## 12  60.00    Mexico
-    ## 13  58.75    Mexico
-    ## 14  59.13    Mexico
-    ## 15  53.30    Mexico
-    ## 16  60.17    Mexico
-    ## 17  55.60    U.A.E.
-    ## 18  54.22    U.A.E.
-    ## 19  53.18    U.A.E.
-    ## 20  56.12    U.A.E.
-    ## 21  60.01    U.A.E.
-    ## 22  53.20    U.A.E.
-    ## 23  54.00    U.A.E.
-    ## 24  55.19    U.A.E.
-    ## 25  53.11      Oman
-    ## 26  52.90      Oman
-    ## 27  53.75      Oman
-    ## 28  54.10      Oman
-    ## 29  59.03      Oman
-    ## 30  52.35      Oman
-    ## 31  52.80      Oman
-    ## 32  54.95      Oman</code>
-
-
-
+```{r}    
+oil.prices.t <- stack(oil.prices.w, select =c(U.K., Mexico, U.A.E., Oman))
+colnames(oil.prices.t) <- c("prices", "countries")
+oil.prices.t
+```
 
 كما ترى هنا, فقد قمنا بتحويل تنسيق البيانات من عرضي إلى طولي بكل سهولة. قد لا يبدو هذا إنجازا كبيرا لكنه كذلك عندما ندرك حجم الإمكانيات التي فتحناها لأنفسنا لنقوم بالعديد من المهام التحليلية. دعنا نرى مدى سهولة القيام بتحليل التباين لتلك البيانات بإستخدام دالة aov() التي سبق وذكرناها
 
 
 
-    
-    <code class="hljs">res <-aov(prices~countries, data = oil.prices.t)
-    summary(res)</code>
-
-
-
-    
-    <code class="hljs">##             Df Sum Sq Mean Sq F value   Pr(>F)    
-    ## countries    3  188.5   62.82   11.53 4.27e-05 ***
-    ## Residuals   28  152.6    5.45                     
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code>
-
-
+```{r}    
+res <-aov(prices~countries, data = oil.prices.t)
+summary(res)
+```
 
 
 لاحظ أنه لم يكن بالإمكان فعل ذلك إن لم نقم بتحويل تنسيق البيانات للتنسيق الطولي هنا يا صديقي تكمن قوة هذه المهارة المهمة. دعنا الآن نقوم بنفس هذه العملية بإستخدام دالة gather() المتوفرة في حزمة tidyr الشهيرة
 
 
 
-    
-    <code class="hljs"><span class="hljs-keyword">library</span>(<span class="hljs-string">"tidyr"</span>)
-    gather(oil.prices.w, countries, prices, U.K.:Oman)</code>
-
-
-
-    
-    <code class="hljs">##    countries prices
-    ## 1       U.K.  62.10
-    ## 2       U.K.  63.20
-    ## 3       U.K.  55.80
-    ## 4       U.K.  56.90
-    ## 5       U.K.  61.20
-    ## 6       U.K.  60.18
-    ## 7       U.K.  60.90
-    ## 8       U.K.  61.12
-    ## 9     Mexico  56.30
-    ## 10    Mexico  59.45
-    ## 11    Mexico  60.02
-    ## 12    Mexico  60.00
-    ## 13    Mexico  58.75
-    ## 14    Mexico  59.13
-    ## 15    Mexico  53.30
-    ## 16    Mexico  60.17
-    ## 17    U.A.E.  55.60
-    ## 18    U.A.E.  54.22
-    ## 19    U.A.E.  53.18
-    ## 20    U.A.E.  56.12
-    ## 21    U.A.E.  60.01
-    ## 22    U.A.E.  53.20
-    ## 23    U.A.E.  54.00
-    ## 24    U.A.E.  55.19
-    ## 25      Oman  53.11
-    ## 26      Oman  52.90
-    ## 27      Oman  53.75
-    ## 28      Oman  54.10
-    ## 29      Oman  59.03
-    ## 30      Oman  52.35
-    ## 31      Oman  52.80
-    ## 32      Oman  54.95</code>
+```{r}    
+library("tidyr")
+gather(oil.prices.w, countries, prices, U.K.:Oman)
+```
 
 
 
@@ -236,40 +136,7 @@ categories:
 كما ترى, لقد حصلنا على نفس النتائج تقريبا. ما يميز دالة gather ان استخدامها مختصر وانيق. لذلك الكثير من علماء البيانات يفضلونها على دالة stack الموجودة في حزمة آر الاساسية
 
 
-
-
-
-
-
-
-
-
 ### الخلاصة
 
 
-
-
 كان هذا المقال قصيرا جدا لكنه يوضح مدى اهمية مهارة معالجة البيانات وتنسيقها بالشكل الذي يخدم اهداف عالم البيانات ويسهل مهامه بشكل كبير. اتمنى ان يكون هذا المقال قد حاز على رضاك وأن يكون لك مصدر ترجع له عندما تواجه اي مشاكل تتعلق بالتعامل مع دوال آر التي تتطلب بيانات بالتنسيق الطولي
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

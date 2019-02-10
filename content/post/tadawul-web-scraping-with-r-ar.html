@@ -1,0 +1,189 @@
+---
+author: Hussain
+comments: true
+date: 2017-12-21 23:29:53+00:00
+layout: post
+link: https://arabianAnalyst.com/2017/12/21/tadawul-web-scraping-with-r-ar/
+slug: tadawul-web-scraping-with-r-ar
+title: تقشير البيانات من موقع تداول بستخدام R
+wordpress_id: 150
+tags:
+- مهارة
+- إستحواذ البيانات
+---
+
+
+
+<div class="section level4">
+<h4>مقدمة</h4>
+<p>احد أهم الخطوات في تحليل البيانات هي الحصول على البيانات نفسها. صعوبة هذه الخطوة يعتمد على مدى توفر البيانات المراد تحليلها.لذلك اليوم راح اشرح لك طريقة “تقشير الويب” وهي احد طرق جمع البيانات. وبالتحديد راح احاول اجمع بيانات موقع تداول عن طريق استخدام لغة R وهي اللغة المفضلة عندي لمثل هذه المهمات.</p>
+</div>
+<div id="-----" class="section level4">
+<h4>هل تقشير الويب هي الطريقة الوحيدة؟</h4>
+<p>اكيد لا , في الاسواق العالمية والأمريكية بالخصوص يمكن تحميل بيانات اداء الأسهم أو المؤشر بدون اللجوء للبرمجة. موقع جوجل على سبيل المثال عنده صفحة خاصة لعرض بيانات الاسهم الامريكية ويمكن تحميلها كملف csv او ملف اكسل. كذلك موقع ياهو يوفر نفس الخدمة. للأسف, موقع تداول لا يوفر مثل هذه الخدمة ويمكن الحصول على بيانات الأسهم او المؤشر السعودي إما بتصفح الموقع أو بشراء ترخيص للنشر. لذلك قررت ان اكتب كود يستخرج البيانات من موقع تداول لتحليلها لاحقا.</p>
+</div>
+<div id="---" class="section level4">
+<h4>بعض الأساسيات عن الويب</h4>
+<p>لكن قبل ما نبدأ مشوارنا مع تقشير الويب, لازم نعرف بعض الاشياء المهمة عن كيفية حصول المواقع نفسها على البيانات وكيف تعرضها على صفحاتها. في معظم الاحيان كل ما يتطلب منا هو ان نكتب موقع تداول في برنامج المتصفح عندنا والموقع يحمل الصفحة مع بيانات اليوم للمؤشر او السهم. ولكن ما يحصل بالضبط هو ان المتصفح يستخدم الرابط الذي كتبناه ويحوله مع التقيد ببروتوكول نقل النص الفائق (أو ما يعرف بـ إتش تي تي بي) إلى “طلب نقل نص فائق” ويرسله إلى خادم معين يستقبل مثل هذه الطلبات. الخادم يستجيب بدوره للطلب ويرسل المعلومات المناسبة.</p>
+</div>
+<div id="--" class="section level4">
+<h4>خلينا ناخذ مثال</h4>
+<p>إذا شعرت ان الموضوع بدأ يتعقد انا راح اعطيك مثال مع ياهو</p>
+<p><a href="https://uk.finance.yahoo.com/quote/AAPL/history?period1=1511211600&amp;period2=1513803600&amp;interval=1d&amp;filter=history&amp;frequency=1d" class="uri">https://uk.finance.yahoo.com/quote/AAPL/history?period1=1511211600&amp;period2=1513803600&amp;interval=1d&amp;filter=history&amp;frequency=1d</a></p>
+<p>هذا الرابط لموقع ياهو يعرض لنا أخر ٣٠ يوم من تداولات شركة آبل. لو امعنت النظر, راح تشوف ان هذا الرابط يحتوي على خمس متغيرات بالإضافة إلى رمز شركة آبل APPL الظاهر في الرابط. الأول هو period1 وقيمته 1511211600. المتغير الثاني هو period2 وقيمته 1513803600. هذان المتغيران هما من يحدد النافذة الزمنية للبيانات التي نريد جمعها. كما تلاحظ، هذه الارقام لا تشبه اي تاريخ فما الحكاية هنا. الجدير بالذكر هو ان موقع ياهو يستخدم نظام توقيت يونكس وهو ببساطة نظام يمثل الوقت والتاريخ بعدد الثواني المنقضية منذ الواحد من يناير سنة ١٩٧٠. هذه الطريقة تسهل على الكمبيوترات التعامل الوقت وإجراء العمليات الحسابية عليه. المتغير الثالث هو interval وقيمته 1d اي اعطيني البيانات بالأيام وليس بالأسابيع على سبيل المثال. المتغيران الآخيران هم filter و frequency سوف نغض النظر عنهم لأنهم غير مهمين بالنسبة لنا الآن.</p>
+<p>الأن بإمكاننا ان نغير قيم هذه المتغيرات ونحصل على اي نوع من البيانات الي نبغاها بدون ما نتصفح موقع ياهو يدويا. خلينا نجرب نطلب بيانات تداولات سهم شركة مايكروسوفت للشهرين المنصرمين. متغيراتنا راح تكون كالتالي</p>
+<ul>
+<li><p>الأول : 1508533200</p></li>
+<li><p>الثاني : 1513803600</p></li>
+<li><p>الثالث : لا تغيير</p></li>
+<li><p>الرابع : لا تغيير</p></li>
+<li><p>الخامس : لا تغيير</p></li>
+</ul>
+<p>الرابط راح يكون بشكل كالتالي</p>
+<p><a href="https://uk.finance.yahoo.com/quote/MSFT/history?period1=1508533200&amp;period2=1513803600&amp;interval=1d&amp;filter=history&amp;frequency=1d" class="uri">https://uk.finance.yahoo.com/quote/MSFT/history?period1=1508533200&amp;period2=1513803600&amp;interval=1d&amp;filter=history&amp;frequency=1d</a></p>
+<p>طبعا لاحظ أننا قمنا بتغيير رمز الشركة إلى MSFT في الرابط</p>
+</div>
+<div id="--" class="section level4">
+<h4>طلبات خلف الكواليس</h4>
+<p>ماتعلمنا إلى الآن كافي لإستخراج بيانات موقع تداول القديم. لكن تداول حدثت موقعها في ١٥ مايو ٢٠١٦ . الموقع الجديد يستخدم تقنية الأجاكس AJAX . لعلك لاحظت عند تصفحك بعض المواقع ان بعضها يعيد تحميل الصفحة بكاملها وبعضها الآخر يحدث جزء من الصفحة فقط. المواقع الي تحدث جزء من الصفحة تستخدم تقنية الأجاكس. الأجاكس بختصار هي تقنية تستخدمها بعض المواقع لتتمكن من تكوين طلبات http خلف الكواليس بدون التأثير على المحتويات الاخرى في الصفحة. في موقع تداول وصفحة اداء المؤشر على سبيل المثال, راح تلاحظ ان الصفحة تعرض اولا ثم جدول البيانات. وإذا غيرت تواريخ الأداء , يتم تحديث الجدول فقط وليس كل الصفحة. هذا ايضا يعني ان الرابط لا يتم تحديثه وبالتالي لا يمكننا الاعتماد عليه. للحصول على روابط الطلبات “الخفية” انصحك ان تستخدم فايرفوكس وتثبيت إضافة اسمها httpFox فعّل الإضافة واذهب إلى التالي</p>
+<p>أدوات -&gt; مطوريّ الويب -&gt; httpfox ثم open in own window</p>
+<p>يفترض ان تفتح لك هذه النافذة</p>
+<p><a href="http://arabianAnalyst.com/wp-content/uploads/2017/12/TadawulPlot1.png"><img src="http://arabianAnalyst.com/wp-content/uploads/2017/12/TadawulPlot1-300x142.png" /></a></p>
+<p>الآن افتح موقع تداول وروح إلى صفحة المؤشر راح تشوف ان البرنامج بدأ برصد جميع الطلبات الي صارت خلف الكواليس كما هو في الصورة ادناه.</p>
+<p><a href="http://arabianAnalyst.com/wp-content/uploads/2017/12/TadawulPlot2.png"><img src="http://arabianAnalyst.com/wp-content/uploads/2017/12/TadawulPlot2-300x138.png" /></a></p>
+<p>هذه الطلبات هي الي بنستخدمها لكتابة الكود. رابط تداول لبيانات شركة معينة يحتوي على ٧٠ متغير. لحسن الحظ, كل ما يمهنا هو اربع متغيرات فقط وهم رمز الشركة والفترة (من تاريخ إلى تاريخ معين) و رقم الصفحة. موقع تداول يعرض فقط ثلاثين سجل لكل طلب. لذلك نحتاج رقم الصفحة لتصفح وجمع كل البيانات الي طلبناها. لو ننسخ الطلب بدون اي تعديل راح نحصل على البيانات وحدها لكن بتنسيق غريب. هذا التنسيق هو ما يعرف بالجيسون JSON. هذا التنسيق في انتشار كبير حاليا وتستخدمه مواقع كبيرة مثل الفيسبوك والتويتر. لحسن الحظ هناك حزمة في لغة الـ R راح تساعدنا كثير في قراءة البيانات من الملفات بتنسيق الجيسون. الرابط سيكون بالشكل التالي</p>
+<pre class="r"><code>#https://www.tadawul.com.sa/wps/portal/tadawul/markets/equities/indices/today/!ut/p/z1/rZFNTwIxEIZ_C4cepbOwgnprTFhrViIRcO1lU7pVavqxaQuL_97CzUSXGJ3bZJ4nM28GM1xhZvlevfGonOU69S9sUo9Gt1fZdQ4llNMMyKQAunjIx8UM8HMfAEWG2a_8gs6nQBbkbj1bL5M__psP-Xmf9SLzrB84RfwKfJOhFzgeeQLghyKA78_lSI_axtjeIEDQdd1QbcxQOIPgYLQNCFrvGgQNjzx-tBKBcDZKGxF4GdzOC3khnNZSHP8eMIt8Q20jD7h6lP7VecOtkP-9RGy5j3XkQdVi530i65CGzuNqSZ4obs1qVYGi75d6X5LB4BP_kbdL/p0/IZ7_NHLCH082KGN530A68FC4AN2OM2=CZ6_22C81940L0L710A6G0IQM43GF0=N/?draw=4&amp;columns;%5B0%5D%5Bdata%5D=date&amp;columns;%5B0%5D%5Bname%</code></pre>
+<p>الرابط اطول من كذا لكن اختصرته لأعطيك فكرة فقط.</p>
+</div>
+<div id="-" class="section level4">
+<h4>كتابة الكود</h4>
+<p>حان الوقت اننا نضع كل شي تعلمناه في كتابة الكود. أول شي راح نعمله هو كتابة دالة تأخذ المتغيرات الي ذكرناها بالإضافة إلى متغير نوع الرابط ومخرجاتها رابط يمكننا استخدامه لإستخراج بيانات المؤشر أو شركة بعينها.</p>
+<pre class="r"><code>parseURL &lt;- function(p,fromDate, toDate, comSymbol = NULL , type, adjustment =&quot;no&quot;) {
+  if (type == &quot;company&quot;) {
+    firstJunk &lt;-&quot;https://www.tadawul.com.sa/wps/portal/tadawul/market-participants/issuers/issuers-directory/company-details/!ut/p/z1/pdDJDoIwFAXQr2HdSwFFdwgKlSHBAbUbUzUqCdMCNfr1FnVj4hDj2zU5973cEk7mhBfimO5EnZaFyOR7wVvLyAtsDyb13f5Eg9VyQnsUMQqAzG6AUttUOzoCBG1VAhcsDnUNsUb4T3mXRW1YseUlg0RSk_6Xh_4tPyR8l5Wre9V9XVddBQpqsRGnQ6aA8HWZV6I4j8_5qpRIhdoc5c974VFH7u37vmMbFD3jAT79yzN4UfwjaJrdAN6MBVLl0-n8EmzHLGVXY0T5Tw!!/p0/IZ7_NHLCH082KGET30A6DMCRNI2086=CZ6_NHLCH082KGET30A6DMCRNI2000=NJhistoricalPerformance=/?draw=2&amp;columns%5B0%5D%5Bdata%5D=transactionDate&amp;columns%5B0%5D%5Bname%5D=&amp;columns%5B0%5D%5Bsearchable%5D=true&amp;columns%5B0%5D%5Borderable%5D=true&amp;columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&amp;columns%5B1%5D%5Bdata%5D=todaysOpen&amp;columns%5B1%5D%5Bname%5D=&amp;columns%5B1%5D%5Bsearchable%5D=true&amp;columns%5B1%5D%5Borderable%5D=true&amp;columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&amp;columns%5B2%5D%5Bdata%5D=highPrice&amp;columns%5B2%5D%5Bname%5D=&amp;columns%5B2%5D%5Bsearchable%5D=true&amp;columns%5B2%5D%5Borderable%5D=true&amp;columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&amp;columns%5B3%5D%5Bdata%5D=lowPrice&amp;columns%5B3%5D%5Bname%5D=&amp;columns%5B3%5D%5Bsearchable%5D=true&amp;columns%5B3%5D%5Borderable%5D=true&amp;columns%5B3%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B3%5D%5Bsearch%5D%5Bregex%5D=false&amp;columns%5B4%5D%5Bdata%5D=previousClosePrice&amp;columns%5B4%5D%5Bname%5D=&amp;columns%5B4%5D%5Bsearchable%5D=true&amp;columns%5B4%5D%5Borderable%5D=true&amp;columns%5B4%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B4%5D%5Bsearch%5D%5Bregex%5D=false&amp;columns%5B5%5D%5Bdata%5D=change&amp;columns%5B5%5D%5Bname%5D=&amp;columns%5B5%5D%5Bsearchable%5D=true&amp;columns%5B5%5D%5Borderable%5D=true&amp;columns%5B5%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B5%5D%5Bsearch%5D%5Bregex%5D=false&amp;columns%5B6%5D%5Bdata%5D=changePercent&amp;columns%5B6%5D%5Bname%5D=&amp;columns%5B6%5D%5Bsearchable%5D=true&amp;columns%5B6%5D%5Borderable%5D=true&amp;columns%5B6%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B6%5D%5Bsearch%5D%5Bregex%5D=false&amp;columns%5B7%5D%5Bdata%5D=volumeTraded&amp;columns%5B7%5D%5Bname%5D=&amp;columns%5B7%5D%5Bsearchable%5D=true&amp;columns%5B7%5D%5Borderable%5D=true&amp;columns%5B7%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B7%5D%5Bsearch%5D%5Bregex%5D=false&amp;columns%5B8%5D%5Bdata%5D=turnOver&amp;columns%5B8%5D%5Bname%5D=&amp;columns%5B8%5D%5Bsearchable%5D=true&amp;columns%5B8%5D%5Borderable%5D=true&amp;columns%5B8%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B8%5D%5Bsearch%5D%5Bregex%5D=false&amp;columns%5B9%5D%5Bdata%5D=noOfTrades&amp;columns%5B9%5D%5Bname%5D=&amp;columns%5B9%5D%5Bsearchable%5D=true&amp;columns%5B9%5D%5Borderable%5D=true&amp;columns%5B9%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B9%5D%5Bsearch%5D%5Bregex%5D=false&amp;start=&quot;
+    return (
+      paste(
+        firstJunk,p,&quot;&amp;length=30&amp;search%5Bvalue%5D=&amp;search%5Bregex%5D=false&amp;isNonAdjusted=0&amp;startDate=&quot;, fromDate, &quot;&amp;toDate=&quot; ,toDate,&quot;&amp;symbol=&quot;,comSymbol,&quot;&amp;_=1463986258725&quot;,sep = &quot;&quot;
+      )
+    )
+  }
+  if (type == &quot;index&quot;) {
+    firstJunk &lt;- &quot;https://www.tadawul.com.sa/wps/portal/tadawul/markets/equities/indices/today/!ut/p/z1/rZFNTwIxEIZ_C4cepbOwgnprTFhrViIRcO1lU7pVavqxaQuL_97CzUSXGJ3bZJ4nM28GM1xhZvlevfGonOU69S9sUo9Gt1fZdQ4llNMMyKQAunjIx8UM8HMfAEWG2a_8gs6nQBbkbj1bL5M__psP-Xmf9SLzrB84RfwKfJOhFzgeeQLghyKA78_lSI_axtjeIEDQdd1QbcxQOIPgYLQNCFrvGgQNjzx-tBKBcDZKGxF4GdzOC3khnNZSHP8eMIt8Q20jD7h6lP7VecOtkP-9RGy5j3XkQdVi530i65CGzuNqSZ4obs1qVYGi75d6X5LB4BP_kbdL/p0/IZ7_NHLCH082KGN530A68FC4AN2OM2=CZ6_22C81940L0L710A6G0IQM43GF0=N/?draw=25&amp;columns%5B0%5D%5Bdata%5D=date&amp;columns%5B0%5D%5Bname%5D=&amp;columns%5B0%5D%5Bsearchable%5D=true&amp;columns%5B0%5D%5Borderable%5D=true&amp;columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&amp;columns%5B1%5D%5Bdata%5D=open&amp;columns%5B1%5D%5Bname%5D=&amp;columns%5B1%5D%5Bsearchable%5D=true&amp;columns%5B1%5D%5Borderable%5D=true&amp;columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&amp;columns%5B2%5D%5Bdata%5D=high&amp;columns%5B2%5D%5Bname%5D=&amp;columns%5B2%5D%5Bsearchable%5D=true&amp;columns%5B2%5D%5Borderable%5D=true&amp;columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&amp;columns%5B3%5D%5Bdata%5D=low&amp;columns%5B3%5D%5Bname%5D=&amp;columns%5B3%5D%5Bsearchable%5D=true&amp;columns%5B3%5D%5Borderable%5D=true&amp;columns%5B3%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B3%5D%5Bsearch%5D%5Bregex%5D=false&amp;columns%5B4%5D%5Bdata%5D=close&amp;columns%5B4%5D%5Bname%5D=&amp;columns%5B4%5D%5Bsearchable%5D=true&amp;columns%5B4%5D%5Borderable%5D=true&amp;columns%5B4%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B4%5D%5Bsearch%5D%5Bregex%5D=false&amp;columns%5B5%5D%5Bdata%5D=totalVolume&amp;columns%5B5%5D%5Bname%5D=&amp;columns%5B5%5D%5Bsearchable%5D=true&amp;columns%5B5%5D%5Borderable%5D=true&amp;columns%5B5%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B5%5D%5Bsearch%5D%5Bregex%5D=false&amp;columns%5B6%5D%5Bdata%5D=totalTurnover&amp;columns%5B6%5D%5Bname%5D=&amp;columns%5B6%5D%5Bsearchable%5D=true&amp;columns%5B6%5D%5Borderable%5D=true&amp;columns%5B6%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B6%5D%5Bsearch%5D%5Bregex%5D=false&amp;columns%5B7%5D%5Bdata%5D=noOfTrades&amp;columns%5B7%5D%5Bname%5D=&amp;columns%5B7%5D%5Bsearchable%5D=true&amp;columns%5B7%5D%5Borderable%5D=true&amp;columns%5B7%5D%5Bsearch%5D%5Bvalue%5D=&amp;columns%5B7%5D%5Bsearch%5D%5Bregex%5D=false&amp;order%5B0%5D%5Bcolumn%5D=0&amp;order%5B0%5D%5Bdir%5D=desc&amp;start=&quot;
+    fromDate &lt;- strptime(fromDate, format = &quot;%Y-%m-%d&quot;) ; toDate &lt;- strptime(toDate, format = &quot;%Y-%m-%d&quot;)
+
+    fromY &lt;- format.Date(fromDate, &quot;%Y&quot;) ; toY &lt;- format.Date(toDate, &quot;%Y&quot;)
+    fromM &lt;- format.Date(fromDate, &quot;%m&quot;) ; toM &lt;- format.Date(toDate, &quot;%m&quot;)
+    fromD &lt;- format.Date(fromDate, &quot;%d&quot;) ; toD &lt;- format.Date(toDate, &quot;%d&quot;)
+
+    return (
+      paste(
+        firstJunk,p,&quot;&amp;length=10&amp;search%5Bvalue%5D=&amp;search%5Bregex%5D=false&amp;sourceCallerId=datePicker&amp;dateParameter=&quot;, fromY,&quot;%2F&quot;,fromM,&quot;%2F&quot;,fromD,&quot;+-+&quot;,toY,&quot;%2F&quot;,toM,&quot;%2F&quot;,toD,&quot;&amp;typeOfCall=&quot;, ifelse(adjustment ==&quot;no&quot;,  &quot;adjustedType&quot;,&quot;nonAdjustedType&amp;old_tasi_current_sector=TASI&quot;),sep = &quot;&quot;
+      )
+    )
+  }
+
+}</code></pre>
+<p>ممتاز!! الآن نحتاج دالة خاصة بإستخراج بيانات المؤشر وتنسيقها في إيطار بيانات. لكن قبل ما نبدأ بكتابة هذه الدالة, لازم نحّمل ونرفق حزمة الـ rjson هذه الحزمة مهم لإنها توفر دالة خاصة لقراءة تنسيق الجيسون. ضع في عين الاعتبار انك تحتاج تحمل الحزمة مرة واحدة فقط ولكنك تحتاج ترفقها لكل جلسة جديد في لغة الـ R هذه الدالة سوف تأخذ متغيرين فقط وهما بدء وانتهاء الفترة التاريخية للمؤشر. الجدير بالذكر, ان المؤشر تم إعادة هيكلته في عام ٢٠٠٨ شهر ابريل. البيانات القديمة له رابط مختلف قليلا عن البيانات الجديدة. لذلك قمت بكتابة دالة اضافية لتعديل ودمج البيانات عند الضرورة.</p>
+<pre class="r"><code>#install.packages(&quot;rjson&quot;)  # only if not installed already
+library(&quot;rjson&quot;)
+#Private FUNCTION: to get the index
+privateGetIndex &lt;-function(startDate, endDate, adjustPeriod){
+  nRecords &lt;-  fromJSON(file= parseURL(0, startDate, endDate, type = &quot;index&quot;, adjustment = adjustPeriod))$recordsFiltered
+  ifelse(nRecords &lt;= 10, nPages &lt;- 1, nPages &lt;- ceiling(nRecords/10))
+
+  fullData &lt;- data.frame(stringsAsFactors = FALSE)
+  for (i in 0:nPages ) {
+    jsonData &lt;- fromJSON(file = parseURL((i*10), startDate, endDate, type = &quot;index&quot;, adjustment = adjustPeriod))
+    p.table &lt;- t(sapply(jsonData$data, function(x) unlist(x)))
+    fullData &lt;- rbind(fullData, as.data.frame(p.table, stringsAsFactors = FALSE))
+  }
+  #Formating the table
+  fullData$date &lt;- strptime(fullData$date, format = &quot;%Y/%m/%d&quot;)
+  fullData$high &lt;- as.numeric(gsub(&quot;,&quot;,&quot;&quot;, fullData$high))
+  fullData$open &lt;- as.numeric(gsub(&quot;,&quot;,&quot;&quot;, fullData$open))
+  fullData$low &lt;- as.numeric(gsub(&quot;,&quot;,&quot;&quot;, fullData$low) )
+  fullData$close &lt;- as.numeric(gsub(&quot;,&quot;,&quot;&quot;, fullData$close))
+  fullData$noOfTrades &lt;- as.numeric(gsub(&quot;,&quot;,&quot;&quot;, fullData$noOfTrades))
+  fullData$totalVolume &lt;- as.numeric(gsub(&quot;,&quot;,&quot;&quot;, fullData$totalVolume))
+  return (fullData[nRecords:1,])
+}</code></pre>
+<p>رائع, الآن كل ما علينا هو ان نكتب دالة خاصة لإستخراج بيانات الشركات. هذه الدالة راح تأخذ متغير الفترة (البدء والإنتهاء) ورمز الشركة ومخرجاتها بيانات الشركة للفترة المحددة وتنسيقها في إيطار بيانات.</p>
+<pre class="r"><code>    #FUNCTION: get all records of a specified company for a specified period.
+getCompanyRecords &lt;- function (startDate, endDate, companySymbol){
+      nRecords &lt;-  fromJSON(file= parseURL(0, startDate, endDate, companySymbol, type = &quot;company&quot;))$recordsFiltered
+      ifelse(nRecords &lt;= 30, nPages &lt;- 1, nPages &lt;- ceiling(nRecords/30))
+
+      fullData &lt;- data.frame(stringsAsFactors = FALSE)
+      for (i in 0:nPages ) {
+        jsonData &lt;- fromJSON(file = parseURL((i*30), startDate, endDate, companySymbol, type = &quot;company&quot;))
+        p.table &lt;- t(sapply(jsonData$data, function(x) unlist(x)))
+        fullData &lt;- rbind(fullData, as.data.frame(p.table, stringsAsFactors = FALSE))
+      }
+
+      #Formating the table
+      fullData$transactionDate &lt;- strptime(fullData$transactionDate, format = &quot;%b %e, %Y&quot;)
+      fullData$previousClosePrice &lt;- as.numeric(fullData$previousClosePrice)
+      fullData$todaysOpen &lt;- as.numeric(fullData$todaysOpen)
+      fullData$highPrice &lt;- as.numeric(fullData$highPrice)
+      fullData$lowPrice &lt;- as.numeric(fullData$lowPrice)
+      fullData$volumeTraded &lt;- as.numeric(fullData$volumeTraded)
+      fullData$turnOver &lt;- as.numeric(fullData$turnOver)
+      fullData$noOfTrades &lt;- as.numeric(fullData$noOfTrades)
+      fullData$lastTradePrice &lt;- as.numeric(fullData$lastTradePrice)
+      fullData$change &lt;- as.numeric(fullData$change)
+      fullData$changePercent &lt;- as.numeric(fullData$changePercent)
+
+      return (fullData[nRecords:1,])
+    }</code></pre>
+<p>ممتاز، بما أننا كتبنا دالة لإستخراج بيانات الشركات ، الا يجدر بنا ايضا كتابة دالة متخصص لإستخراج بيانات المؤشر السعودي. الكود سيكون كالتالي</p>
+<pre class="r"><code>#FUNCTION: get all records of TASI for a specified period.
+getIndexRecords &lt;- function(fromDate, toDate){
+
+  cutoffDate &lt;- strptime(&quot;2008-04-02&quot;  , format = &quot;%Y-%m-%d&quot;)
+  stY&lt;-strptime(fromDate, format = &quot;%Y-%m-%d&quot;)
+  endY&lt;-strptime(toDate, format = &quot;%Y-%m-%d&quot;)
+
+  if(stY&lt;=cutoffDate &amp; endY &lt;= cutoffDate) {
+    period &lt;- &quot;AllBeforeRestructure&quot;
+    return(privateGetIndex(startDate = fromDate, endDate = toDate, adjustPeriod = &quot;yes&quot;))
+  }
+  if((stY&lt;=cutoffDate &amp; endY &gt;cutoffDate)){
+    period &lt;- &quot;Combination&quot;
+    oldPart&lt;- privateGetIndex(startDate = fromDate, endDate = &quot;2008-04-02&quot;, adjustPeriod = &quot;yes&quot;)
+    newPart&lt;- privateGetIndex(startDate = &quot;2008-04-05&quot;, endDate = toDate, adjustPeriod = &quot;no&quot;)
+    oldPart$close * 0.9801111;
+    return(rbind(oldPart,newPart)); }
+  if((stY &gt;cutoffDate)){
+    period &lt;- &quot;NewIndex&quot;
+    return(privateGetIndex(startDate = fromDate, endDate = toDate, adjustPeriod = &quot;no&quot;))
+  }
+}</code></pre>
+</div>
+<div id="----------" class="section level4">
+<h4>تجربة و أختبار الكود (مبايعة الأمير محمد بن سلمان وليا للعهد)</h4>
+<p>إلى هنا, عملنا انتهى مع كتابة الكود. الأن احنا جاهزين لإختبار الكود والإجابة عن بعض التساؤلات حول السوق. خلينا نحاول نستخرج البيانات الخاصة بالمؤشر خلال هذه السنة المليئة بالأحداث. الهدف من استخراج هذه البيانات هو عرض ما حدث في شهر يونيو ٢٠١٧ عندما تم مبايعة الأمير محمد بن سلمان وليا للعهد من خلال رسم بياني. لاحظ ان الكود قد يستغرق بعض الوقت. لذلك انصحك ترتاح و تحتسي لك كوب من الشاهي وتروّق. بعد ما يخلص الكود, راح يكون عندنا كل البيانات محفوظة في المتغير TASI . لتتأكد اننا حصلنا على البيانات المطلوبة خلينا نشغل هذا الكود</p>
+<pre class="r"><code>    TASI &lt;- getIndexRecords(&quot;2017-01-01&quot;, &quot;2017-12-01&quot;)
+    head(TASI)</code></pre>
+<pre><code>##           date    high    open     low   close totalVolume
+## 229 2017-01-01 7250.19 7210.43 7207.65 7237.95   255952441
+## 228 2017-01-02 7290.33 7237.95 7224.77 7247.34   312736127
+## 227 2017-01-03 7260.37 7247.34 7209.51 7250.76   284685240
+## 226 2017-01-04 7254.61 7250.76 7182.79 7198.11   253846273
+## 225 2017-01-05 7224.50 7198.11 7176.32 7198.73   230944017
+## 224 2017-01-08 7212.04 7198.73 7130.25 7138.86   197931791
+##        totalTurnover noOfTrades
+## 229 4,460,586,641.65     113416
+## 228 5,841,410,563.75     147723
+## 227 5,151,905,839.90     132104
+## 226 5,031,016,273.05     138147
+## 225 4,460,386,480.90     120440
+## 224 3,900,807,491.20     106546</code></pre>
+<p>ممتاز, يبدو ان كل شي تمام. الآن راح نعمل رسم بياني ونأخذ فكرة عن ردة فعل السوق تجاه الخبر.</p>
+<pre class="r"><code>at.tick &lt;- format(TASI$date, &quot;%d&quot;) %in% c(&quot;15&quot;)
+maxV&lt;-dim(TASI)[1]
+plot(x=as.Date(TASI$date), y=TASI$close, type = &quot;l&quot;, xaxt=&quot;n&quot;, xlab = &quot;Time&quot;, ylab = &quot;Index&quot;)
+axis(side = 1, at = as.Date(TASI$date[at.tick]), labels = format(TASI$date[at.tick], &quot;%b-%y&quot;))
+text(x=as.Date(&quot;2017-08-25&quot;), y =7480 , labels = &quot;Market Jump&quot;, cex = 1)</code></pre>
+<p><img src="/post/tadawul-web-scraping-with-r-ar_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>الإرتفاع واضح تمام حيث ان الموشر وصل إلى ما فوق الـ ٧٤٠٠ نقطة بعد ما كان ما دون ٦٧٠٠ نقطة. وبذلك نختم موضوعنا اليوم واتمنى انك استمتعت بقراءته. ولكن الأهم هو انك تعلمت ولو القليل عن طريقة تقشير الويب. لا تتردد بنسخ الكود وتجريب أو حتى تطويره كما تشاء. إذا عندك اي ملاحظات او اقتراحات ارجو انك ترسلها عبر قسم التعليقات و شكراً</p>
+</div>

@@ -1,0 +1,96 @@
+---
+author: Hussain
+comments: true
+date: 2017-11-22 20:02:24+00:00
+layout: post
+link: https://arabianAnalyst.com/2017/11/22/interactive-map-saudi-imports/
+slug: interactive-map-saudi-imports
+title: 'فكرة عابرة : خريطة تفاعلية لواردات المملكة'
+tags:
+- جيوغرافي
+- مهارة
+---
+
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/pymjs/pym.v1.js"></script>
+<script src="/rmarkdown-libs/widgetframe-binding/widgetframe.js"></script>
+
+
+<p>احد اسرار عشقي للغة الـ R هو شعوري بأنه لا يوجد حد لما استطيع فعله بهذه اللغة الرائعة. اليوم سوف استعرض لكم احد تلك الإمكانيات الا وهي صنع تصويرات بيانية تفاعلية. نعم لقد قرأت تلك الجملة بشكل صحيح. R بإمكانه أن يكون تفاعلي. في الحقيقة هناك الكثير من الحزم التي تمكننا من فعل ذلك لكنني لن استعرضها كلها فذلك يستحق كتاب بذاته.</p>
+<div id="--htmlwidgets" class="section level3">
+<h3>حركة الـ HTMLWIDGETS</h3>
+<p>مؤخرا انتشرت حركة في وسط مجتمع مطوري حزم لغة R خصوصا المهتمين بالتصوير البياني. تلك الحركة تهدف إلى جلب قوة Java Script الرائعة في صنع مختلف الرسومات والتصويرات البيانية على صفحات الويب و ترويضها لتعمل بتناغم تام مع لغة R . تلك الحركة انجبت لنا ما يعرف الآن بـ <a href="https//www.htmlwidgets.com">HTMLWIDGETS</a></p>
+<div id="--" class="section level4">
+<h4>مثال واردات المملكة</h4>
+<p>دعنا نحاول ان نمثل واردات المملكة على خريطة تفاعلية حيث يمكننا التصغير و التكبير وحتى سحب الخريطة نفسها. سنقوم بذلك عن طريق اتباع الخطوات التالية :</p>
+<ol style="list-style-type: decimal">
+<li>تحميل المعلومات من موقع <a href="https://www.stats.gov.sa/ar/214">هيئة الإحصاء</a></li>
+</ol>
+<pre class="r"><code>library(&quot;here&quot;)
+file_path &lt;- here(&quot;static&quot;, &quot;data&quot;, &quot;Saudi_Imports.csv&quot;)
+sa.imp &lt;-read.csv(file_path, sep = &quot;,&quot;, header = TRUE )</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>إرفاق بعض الحزم المهمة</li>
+</ol>
+<pre class="r"><code>library(&quot;dplyr&quot;) # لمعالجة البيانات
+library(&quot;stringi&quot;) # حزمة متخصصة لمعالجة النصوص
+library(&quot;leaflet&quot;) # لرسم الخرائط التفاعلية
+library(&quot;sp&quot;) # حزمة مساعدة للرسم على الخرائط
+library(&quot;maps&quot;) # معلومات عن الدول وعواصمها
+library(&quot;widgetframe&quot;)</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>حساب مجموع قيمة الواردات إلى المملكة</li>
+</ol>
+<pre class="r"><code>grouped.imports &lt;- sa.imp %&gt;%
+                   group_by(Country.Name) %&gt;%
+                   summarise(grand.total = sum(Value))</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>كتابة دالة لإستخراج احداثيات عاصمة اي دولة</li>
+</ol>
+<ul>
+<li><p>نحتاج هذه العملية لرسم الخطوط بين المملكة وباقي الدول و لأن بعض الدول كبيرة جدا يتوجب علينا تحديد بداية كل خط</p></li>
+<li><p>لذلك اخترنا بداية الخط لتكون العاصمة في تلك الدول</p></li>
+</ul>
+<pre class="r"><code>get.capital.location &lt;- function(c.n) {
+      x &lt;-filter(world.cities, country.etc == c.n, capital == 1)
+      return(x[,5:4])
+    }</code></pre>
+<ol start="5" style="list-style-type: decimal">
+<li>معالجة الأسماء الموجودة في البيانات من هيئة الإحصاء لتتوافق مع حزمة maps</li>
+</ol>
+<pre class="r"><code>ds&lt;-sapply(stri_trans_totitle(grouped.imports$Country.Name),get.capital.location)
+ds.1 &lt;- t(ds)</code></pre>
+<ol start="6" style="list-style-type: decimal">
+<li>معالجة بعض اسماء الدول يدويا</li>
+</ol>
+<pre class="r"><code>ds.1[&quot;United Kingdom&quot;,] &lt;- get.capital.location(&quot;UK&quot;)
+ds.1[&quot;U.s.a&quot;,] &lt;- get.capital.location(&quot;USA&quot;)
+ds.1[&quot;Sultanate Of Oman&quot;,] &lt;- get.capital.location(&quot;Oman&quot;)
+ds.1[&quot;Russian Federation&quot;,] &lt;- get.capital.location(&quot;Russia&quot;)
+ds.1[,1]&lt;-as.numeric(as.character(ds.1[,1]))
+ds.1[,2]&lt;-as.numeric(as.character(ds.1[,2]))
+ds.c &lt;- matrix(unlist(ds.1), ncol = 2)
+rownames(ds.c) &lt;-rownames(ds.1)
+ds.c &lt;- ds.c[!is.na(ds.c[,1]),]</code></pre>
+<ol start="7" style="list-style-type: decimal">
+<li>كتابة دالة متخصص في ربط كل إحداثية عاصمة بالرياض</li>
+</ol>
+<pre class="r"><code>creat.line2sa &lt;- function(x) {
+  return(Line(rbind(
+    get.capital.location(&quot;Saudi Arabia&quot;), x, make.row.names = TRUE
+    )))
+
+}</code></pre>
+<ol start="8" style="list-style-type: decimal">
+<li>إعداد قائمة الخطوط ومعالجتها لتكون جاهزة للتصوير الجيوغرافي</li>
+</ol>
+<pre class="r"><code>lines.list &lt;-lapply(seq_along(ds.c[,1]), function(inex, x) {(creat.line2sa(ds.c[inex,]))}, x=ds.c)</code></pre>
+<ol start="9" style="list-style-type: decimal">
+<li>اخيرا رسم الخريطة التفاعلية مع جميع خطوط واردات المملكة</li>
+</ol>
+<pre class="r"><code>mapp&lt;-leaflet() %&gt;% addTiles()  %&gt;% addPolylines(data =SpatialLines(list(Lines(lines.list, &quot;ID&quot;))))
+frameWidget(mapp, height = 350, width = &#39;95%&#39;)</code></pre>
+<div id="htmlwidget-1" style="width:95%;height:350px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"url":"/post/interactive-map-saudi-imports_files/figure-html//widgets/widget_unnamed-chunk-10.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
