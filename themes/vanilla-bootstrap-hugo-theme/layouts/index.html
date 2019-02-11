@@ -1,6 +1,9 @@
 {{ define "main" }}
-
 <div id="home-jumbotron" class="jumbotron text-center">
+        <div class="avatar">
+        <img id="profile_photo" src="{{  .Site.Params.profile_photo | absURL }}">
+        </div>
+<br>    
   <h1>{{ .Site.Title }}</h1>
   <p class="font-125">{{ .Site.Params.homeText | markdownify }}</p>
 </div>

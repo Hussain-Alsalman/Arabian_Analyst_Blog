@@ -55,6 +55,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
   highlightjsCDN = ""
   highlightingTheme = "monokai-sublime"
   equationSize = 80
+  profile_photo = "/images/personal_photo.jpg"
 
  [params.social]
     [[params.social.contact]]

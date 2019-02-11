@@ -40,8 +40,9 @@ tags:
 
 إذا شعرت ان الموضوع بدأ يتعقد انا راح اعطيك مثال مع ياهو
 
-[https://uk.finance.yahoo.com/quote/AAPL/history?period1=1511211600&period2=1513803600&interval=1d&filter=history&frequency=1d](https://uk.finance.yahoo.com/quote/AAPL/history?period1=1511211600&period2=1513803600&interval=1d&filter=history&frequency=1d)
-
+```{r}
+#https://uk.finance.yahoo.com/quote/AAPL/history?period1=1511211600&period2=1513803600&interval=1d&filter=history&frequency=1d
+```
 هذا الرابط لموقع ياهو يعرض لنا أخر ٣٠ يوم من تداولات شركة آبل. لو امعنت النظر, راح تشوف ان هذا الرابط يحتوي على خمس متغيرات بالإضافة إلى رمز شركة آبل APPL الظاهر في الرابط. الأول هو period1 وقيمته 1511211600. المتغير الثاني هو period2 وقيمته 1513803600. هذان المتغيران هما من يحدد النافذة الزمنية للبيانات التي نريد جمعها. كما تلاحظ، هذه الارقام لا تشبه اي تاريخ فما الحكاية هنا. الجدير بالذكر هو ان موقع ياهو يستخدم نظام توقيت يونكس وهو ببساطة نظام يمثل الوقت والتاريخ بعدد الثواني المنقضية منذ الواحد من يناير سنة ١٩٧٠. هذه الطريقة تسهل على الكمبيوترات التعامل الوقت وإجراء العمليات الحسابية عليه. المتغير الثالث هو interval وقيمته 1d اي اعطيني البيانات بالأيام وليس بالأسابيع على سبيل المثال. المتغيران الآخيران هم filter و frequency سوف نغض النظر عنهم لأنهم غير مهمين بالنسبة لنا الآن.
 
 الأن بإمكاننا ان نغير قيم هذه المتغيرات ونحصل على اي نوع من البيانات الي نبغاها بدون ما نتصفح موقع ياهو يدويا. خلينا نجرب نطلب بيانات تداولات سهم شركة مايكروسوفت للشهرين المنصرمين. متغيراتنا راح تكون كالتالي
@@ -65,11 +66,11 @@ tags:
 
 الرابط راح يكون بشكل كالتالي
 
-[https://uk.finance.yahoo.com/quote/MSFT/history?period1=1508533200&period2=1513803600&interval=1d&filter=history&frequency=1d](https://uk.finance.yahoo.com/quote/MSFT/history?period1=1508533200&period2=1513803600&interval=1d&filter=history&frequency=1d)
+```{r, eval=FALSE}
+#https://uk.finance.yahoo.com/quote/MSFT/history?period1=1508533200&period2=1513803600&interval=1d&filter=history&frequency=1d
+```
 
 طبعا لاحظ أننا قمنا بتغيير رمز الشركة إلى MSFT في الرابط
-
-
 
 #### طلبات خلف الكواليس
 
