@@ -1,0 +1,64 @@
+---
+title: البيانات الجغرافية في لغة R
+author: Hussain
+date: '2019-02-12'
+slug: geography-in-r
+tags:
+  - جيوغرافي
+draft: true
+---
+
+
+
+<pre class="r"><code>knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)</code></pre>
+<div class="section level2">
+<h2>مقدمة</h2>
+<p>البيانات الجغرافية دائما ما تثير فضولي واهتمامي . ويبدو ان رغم محدودية الكرة الارضية الا ان البيانات الجغرافية في تمدد واتساع مستمرين وبشكل متزايد. لذلك قررت في هذا المقال أن استطلع بعض الافكار والنظريات الخاصة بعلم الجغرافيا وما يمكن تحليله من خلال لغة R</p>
+</div>
+<div id="---" class="section level2">
+<h2>عالم الفيكتور وعالم الراستر</h2>
+<p>هناك طريقتين لتمثيل البيانات الجغرافية .طريقة الـ vector و طريقة raster. الأولى ترى العالم كنقاط واشكال هندسية لها حدود واماكن معروفة على وجه الارض . اما الطريقة الثانية فترى العالم كالبلاط المتطابق في الحجم. لعلك لاحظت عند تصفحك Google Maps ان هناك بعض المربعات يقوم المتصفح بتحميلها لعرض صور الاقمار الصناعية. طبعا لكل طريقة مزايا فطريقة الفيكتور تستخدم بشكل واسع في مجالات علوم الاجتماعيات لرصد الحدود السياسية الدولية او تحديد الاماكن ذات الاهمية . اما طريقة الراستر فتستخدم بشكل مكثف في العلوم البيئية والطبيعية لرصد التضاريس الجغرافية.</p>
+</div>
+<div id="-sf" class="section level2">
+<h2>حزمة sf</h2>
+<p>حزمة sf والتي هي اختصار لـ simple feature تعد من الحزم القوية جدا في التعامل مع البيانات الجيوغرافية. حزمة sf تتبنى طريقة الفيكتور وهي حزمة قوية وانيقة</p>
+<pre class="r"><code>library(&quot;sf&quot;) 
+library(&quot;spData&quot;) # لتحميل خريطة العالم 
+library(&quot;dplyr&quot;) # للتعامل مع البيانات</code></pre>
+<p>البيانات في حزمة sf تكون بصيغة data frames مما يجعل التعامل معها ابسط واسهل. كل سجل بالإمكان ان يحمل معلومات جغرافية وغير جغرافية. لكن العامود الدائم في كل تلك السجلات هو geom وهو عبارة عن قائمة تحمل المعلومات الجغرافية لكل سجل</p>
+<pre class="r"><code>names(world)</code></pre>
+<p>هذه الصيغة في فصل البيانات الجغرافية عن غيرها تجعل العمليات الاحصائية ممكنة على المتغيرات الغير جغرافية مثل العمر الإفتراضي للدول مثلا.</p>
+<pre class="r"><code>summary(world[&quot;lifeExp&quot;])</code></pre>
+<p>هذه الميزة تجعل صنع الخرائط الجغرافية المعلوماتية عملية سهلة جدا</p>
+<pre class="r"><code># عرض جميع المتغيرات 
+plot(world)
+
+plot(world[&quot;pop&quot;]) # عرض خريطة الكثافة السكانية </code></pre>
+<p>بالإمكان ايضا عرض خرائط مخصصة لدولة معينة كالمملكة على سبيل المثال</p>
+<pre class="r"><code>Asia&lt;- world %&gt;% filter(continent == &quot;Asia&quot;) %&gt;% st_union() 
+ksa &lt;- world %&gt;% filter(name_long == &quot;Saudi Arabia&quot;) 
+plot(st_geometry(Asia))
+plot(st_geometry(ksa), lwd = 3, col = &quot;gray&quot;, add = TRUE)</code></pre>
+</div>
+<div id="--sf---openstreetmap" class="section level2">
+<h2>استخدام حزمة Sf مع بيانات OpenStreetMap</h2>
+<p>من المصادر العجيبة المجانية للمعلومات الجغرافية هي <a href="https://www.openstreetmap.org">OpenStreetMap</a>. الجميل في الأمر انه بالإمكان الاستفادة من القاعد البياناتية الضخمة والتعامل مع بياناتها بكل يسر بإستخدام حزمة sf. يمكن زيارة الموضع وتحميل البيانات مجانا.</p>
+<pre class="r"><code>library(&quot;here&quot;)
+Alhasa_file_path &lt;- here(&quot;static&quot;, &quot;data&quot;, &quot;map&quot;)
+Alhasa_str &lt;- st_read(Alhasa_file_path, layer =&quot;lines&quot;) # تمثيل شوارع  الأحساء
+plot(st_geometry(Alhasa_str), main = &quot;شوارع الأحساء&quot;) 
+plot(st_geometry(ksa), lwd = 3, alph = .3,col = rgb(173,216,230, max = 255 ,alpha = 100), add = TRUE)</code></pre>
+<pre class="r"><code>library(&quot;leaflet&quot;)
+leaflet(Alhasa_str) %&gt;% 
+  addPolylines()</code></pre>
+<p>هنا نحدد محافظة الاحساء ونحوله إلى صيغة sf</p>
+<pre class="r"><code>Riyadh_file_path &lt;- here(&quot;static&quot;, &quot;data&quot;, &quot;map1&quot;)
+Riyadh &lt;- st_read(Riyadh_file_path, layer =&quot;lines&quot;) 
+plot(st_geometry(Riyadh), col = &quot;blue&quot;)
+plot(st_geometry(ksa), lwd = 3, alph = .3,col = rgb(173,216,230, max = 255 ,alpha = 100), add = TRUE)</code></pre>
+<pre class="r"><code>library(&quot;raster&quot;)
+raster_filepath = system.file(&quot;raster/srtm.tif&quot;, package = &quot;spDataLarge&quot;)
+new_raster = raster(raster_filepath)</code></pre>
+<pre class="r"><code>new_raster
+plot(new_raster)</code></pre>
+</div>

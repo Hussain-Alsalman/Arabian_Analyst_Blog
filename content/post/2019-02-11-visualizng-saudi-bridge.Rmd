@@ -1,0 +1,194 @@
+---
+title: "صنع خرائط ثلاثية الابعاد"
+author: "Hussain"
+date: '2019-02-19'
+slug: visualizng-saudi-bridge
+tags: 
+  - جيوغرافي
+draft: false
+---
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+## مقدمة 
+
+احد قراءتي حول البيانات الجغرافية وجدت نفسي امام حزمة Rayshader الرائعة. هذه الحزمة لها امكانيات مبهرة منها 
+  - اضافة texture للخريطة مثل الصحراء او الخضرة لتبدو الخريطة اقرب للحقيقة
+  - تقوم الحزمة بتعيين المياه بشكل تلقائي مما يساعد على صنع محاكاة لإرتفاع مستوى المياه او جفافها
+  - الحزمة تقوم كذلك بتتبع مسار الضوء. هذه العملية تسمى بالـ [Ray Tracing](https://en.wikipedia.org/wiki/Ray_tracing_(graphics)) وهي تستخدم بشكل واسع في صناعة الصور ثلاثية الابعاد بشكل متناهي في الدق وقريب من الحقيقة.
+
+بالإضافة إلى العديد من الإمكانيات التي لن يسعنا الوقت للتحدث عنها جميعها. ولعل الصورة هي أكبر برهان. 
+
+
+![هذا مثال لمخرجات الحزمة النهائية](https://raw.githubusercontent.com/tylermorganwall/rayshader/master/man/figures/README_three-d-water-1.png)
+
+
+## من أين نبدأ
+في هذا المقال سوف اقوم بصنع خريطة ثلاثية الابعاد لمنطقة جسر الملك فهد. حتى نتمكن من صنع خريطة ثلاثية الابعاد لابد ان نحصل على خريطة للمنطقة تحتوي على بيانات ارتفاع سطح الارض عن المستوى او ما تسمى بالـ elevation map . يمكن الحصول على مثل تلك الخرائط مجانا من خلال موقع الولايات المتحدة للمسح الجغرافي [USGS](https://topotools.cr.usgs.gov/gmted_viewer/viewer.htm) و الحصول على خارطة بصيغة tif 
+
+الخطوة التالي هي ان نقوم بإقتصاص فقط منطقة الجسر ويمكننا ان نقوم بذلك عن طريق تحديد مستطيل يحوي قيم خطوط العرض والطول..
+
+سوف نحتاج إلى هذه الحزم في هذا المقال : 
+
+```{r}
+library("rayshader")
+library("tidyverse")
+library("rgdal")
+library("here")
+```
+
+## الخطوات و الأكواد
+هنا نقتص الخريطة لنحدد فقط منطقة الجسر. ونقوم بحفظ الخريطة في ملف منفصل.
+
+```{r, eval = FALSE}
+#Loading the larger map
+raster_filepath = here("static", "data", "Saudi_Arabia.tif")
+saudi_arabia_map <- raster::raster(raster_filepath)
+plot(saudi_arabia_map)
+
+#Cropping the map to smaller piece
+estren_region <- extent(matrix(c(50.0551, 50.7218, 26.0142, 26.3931), ncol = 2, byrow = TRUE))
+estren_region_map <- raster::crop(saudi_arabia_map, estren_region)
+
+#Saving the map in seperate file.
+raster::writeRaster(estren_region_map, here("static", "data", "Estren_region.tif"), format="GTiff", overwrite=TRUE)
+
+```
+
+نقوم بقراءة الملف ونعالجه ليكون كطبقة جغرافية
+
+```{r}
+#
+raster_filepath = here::here("static", "data", "Estren_region.tif")
+estren_region_map <- raster::raster(raster_filepath)
+```
+
+بعد الحصول على الخريطة التي تحوي على ارتفاعات وتضاريس المنطقة الجغرافية. يمكننا عرض تلك الخريطة بشكل ثلاثي الابعاد عن طريق استخدام حزمة raster لكن النتائج ليست بالمستوى المطلوب من الدقة والجمال. 
+
+```{r, eval= FALSE}
+
+persp(estren_region_map,exp=0.2,phi=35,shade = 0.45,xlab = "خط الطول" , ylab = "خط العرض", zlab = "الارتفاع", col = "gold",lwd = 0.08)
+
+```
+
+![](/post/2019-02-11-visualizng-saudi-bridge_files/3d_estren_regsion.png)
+
+نقوم بتحويل تلك الطبقة إلى مصفوفة ليمكن معالجتها عن طريق حزمة rayshader لاحقا
+
+```{r}
+#And convert it to a matrix:
+elmat = matrix(raster::extract(estren_region_map,raster::extent(estren_region_map),buffer=1000),
+               nrow=ncol(estren_region_map),ncol=nrow(estren_region_map))
+
+```
+
+مبدئيا يمكننا عرض الخريطة بشكل ثنائي الابعاد بإستخدام الحزمة الآن. 
+
+```{r}
+#We use another one of rayshader's built-in textures:
+elmat %>%
+  sphere_shade(texture = "desert") %>%
+  add_water(detect_water(elmat), color="desert") %>%
+  add_shadow(ray_shade(elmat)) %>%
+  add_shadow(ambient_shade(elmat)) %>%
+  plot_map()
+```
+
+كما ترى الخريطة شكلها افضل بالمقارنة بحزمة raster . 
+
+الخطو التالية هي ان نضع ملامح الخريطة الحقيقية بالإستعانة بكود طوره [Will Bishop](https://github.com/wcmbishop/rayshader-demo/tree/master/R) . في هذه الخطوة سنقوم بتحميل صورة من خرائط [OpenStreetMap](https://www.openstreetmap.org/#map=7/26.131/50.521) والتي تحوي على الحدود الدولية والشوارع وبعض العلامات للمدن .
+
+
+```{r, message=FALSE, warning=FALSE}
+# define bounding box with longitude/latitude coordinates
+map_bounds <- raster::extent(estren_region_map)
+bbox <- list(
+  p1 = list(long = map_bounds@xmin, lat = map_bounds@ymin),
+  p2 = list(long = map_bounds@xmax, lat = map_bounds@ymax)
+)
+
+source("https://raw.githubusercontent.com/wcmbishop/rayshader-demo/master/R/image-size.R")
+source("https://raw.githubusercontent.com/wcmbishop/rayshader-demo/master/R/map-image-api.R")
+
+image_size <- define_image_size(bbox, max(dim(estren_region_map)))
+overlay_file <- here::here("static", "images", "estren_map.png")
+get_arcgis_map_image(bbox, map_type = "World_Topo_Map", file = overlay_file,
+                     width = image_size$width, height = image_size$height, 
+                     sr_bbox = 4326)
+overlay_img <- png::readPNG(overlay_file)
+
+```
+
+لنرى الأن وجه الخريطة الجديد 
+
+```{r}
+elmat %>%
+  sphere_shade(texture = "imhof4") %>%
+  add_water(detect_water(elmat), color = "imhof4") %>%
+  add_shadow(ray_shade(elmat)) %>%
+  add_overlay(overlay_img, alphalayer = 0.7) %>%
+  plot_map()
+```
+
+يمكننا التلاعب بالزاوية التي ننظر من خلالها إلى الخريطة لتبدو بشكل ثلاثي الابعاد من خلال الكود التالي
+
+```{r}
+zscale <- 10
+rgl::clear3d()
+elmat %>%
+  sphere_shade(texture = "imhof4") %>%
+  add_water(detect_water(elmat), color = "imhof4") %>%
+  add_shadow(ray_shade(elmat)) %>%
+  add_overlay(overlay_img, alphalayer = 0.7) %>%
+  plot_3d(elmat, zscale = zscale, windowsize = c(1200, 1000),
+          water = TRUE, soliddepth = -max(elmat)/zscale, wateralpha = 0,
+          theta = 25, phi = 30, zoom = 0.65, fov = 60)
+render_snapshot()
+```
+للأسف المنطقة التي اخترناها لا يوجد بها تضاريس جغرافية ذات ارتفاعات كبيرة. لذلك الصورة تبدو وكأنها مسطحة. 
+
+كذلك يمكننا صنع صورة gif لنحاكي اختلاف مستوى المياه في الخريطة.. اود التنبيه أن الكود ادناه يأخذ بعض الوقت فأنصح ان تقوم بإحتساء كوب من القهوة حتى ينتهي الكود من العمل.  
+
+```{r, echo, eval=FALSE}
+elev_matrix <- elmat
+n_frames <- 180
+zscale <- 6
+# frame transition variables
+waterdepthvalues <- 5 * cos(seq(0,2*pi,length.out = n_frames))
+thetavalues <- 360 *  (0.5 * cos(seq(0, pi, length.out = n_frames)) + 0.5)
+phi <-   (0.5*cos(seq(0, 2*pi, length.out = 50))+0.5)*45
+phi <- c(rep(45,60),phi[1:25],rep(0,10),phi[26:50],rep(45,60))
+# shadow layers
+ambmat <- ambient_shade(elev_matrix, zscale = zscale)
+raymat <- ray_shade(elev_matrix, zscale = zscale, lambert = TRUE)
+
+# generate .png frame images
+img_frames <- paste0("drain", seq_len(n_frames), ".png")
+for (i in seq_len(n_frames)) {
+  message(paste(" - image", i, "of", n_frames))
+  elev_matrix %>%
+    sphere_shade(texture = "imhof1") %>%
+    add_shadow(ambmat, 0.5) %>%
+    add_shadow(raymat, 0.5) %>%
+    add_overlay(overlay_img, alphalayer = 0.7) %>%
+    plot_3d(elev_matrix, solid = TRUE, shadow = TRUE, zscale = zscale, 
+            water = TRUE, watercolor = "imhof3", wateralpha = 0.8, 
+            waterlinecolor = "#ffffff", waterlinealpha = 0.5,
+            waterdepth = waterdepthvalues[i], 
+            theta = thetavalues[i], phi = phi[i])
+  render_snapshot(img_frames[i])
+  rgl::clear3d()
+}
+
+# build gif
+magick::image_write_gif(magick::image_read(img_frames), 
+                        path = here::here("static","images", "estren_region.gif"), 
+                        delay = 6/n_frames)
+```
+
+![](/post/2019-02-11-visualizng-saudi-bridge_files/estren_region.gif)
+
+## الخلاصة 
+لعل هذه الحزمة تبدو وكأنها حزمة للمرح والتسلية (toy package) لكن في الحقيقة يمكن استخدام هذه الحزمة في تطبيقات عملية عديدة. احد الأمثلة على تلك التطبيقات هي حساب متوسط الوقت الذي يتسلط عليه ضوء الشمس لمنطقة معينة عن طريق محاكاة مسار الشمس بالنسبة لتلك المنطقة خلال السنة. ذلك سيمكننا من تحديد ما إذا كانت تلك المنطقة مناسبة لوضع الخلايا الشمسية المولدة للطاقة. كذلك يمكن محاكاة حدوث ظاهرة الفيضانات وتحديد اي المناطق اكثر عرضه للخطر.

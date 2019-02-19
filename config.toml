@@ -47,7 +47,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
   showActiveNav = true
   containerMaxWidth = "700px"
   dateFormat = "Jan 2, 2006"
-  homeText = "رحلة ما بعد اكتشاف علوم الرياضيات إلى علوم البيانات"
+  homeText = "مدونة متخصصة في مواضيع حول جمع وتصوير ونمذجة البيانات والتعلم الآلي"
   footerText = "صمم بواسطة [Hugo](https://gohugo.io/) & [Vanilla](https://github.com/zwbetz-gh/vanilla-bootstrap-hugo-theme)"
   hideFooter = false
   # Styling

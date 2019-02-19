@@ -1,0 +1,105 @@
+---
+title: البيانات الجغرافية في لغة R
+author: Hussain
+date: '2019-02-12'
+slug: geography-in-r
+tags:
+  - جيوغرافي
+draft: true
+---
+
+```{r}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
+```
+
+## مقدمة 
+البيانات الجغرافية دائما ما تثير فضولي واهتمامي . ويبدو ان رغم محدودية الكرة الارضية الا ان البيانات الجغرافية في تمدد واتساع مستمرين وبشكل متزايد. لذلك قررت في هذا المقال أن استطلع بعض الافكار والنظريات الخاصة بعلم الجغرافيا وما يمكن تحليله من خلال لغة R 
+
+## عالم الفيكتور وعالم الراستر
+هناك طريقتين لتمثيل البيانات الجغرافية .طريقة الـ vector و طريقة raster. الأولى ترى العالم كنقاط واشكال هندسية لها حدود واماكن معروفة على وجه الارض . اما الطريقة الثانية فترى العالم كالبلاط المتطابق في الحجم. لعلك لاحظت عند تصفحك  Google Maps ان هناك بعض المربعات يقوم المتصفح بتحميلها لعرض صور الاقمار الصناعية. 
+طبعا لكل طريقة مزايا فطريقة الفيكتور تستخدم بشكل واسع في مجالات علوم الاجتماعيات لرصد الحدود السياسية الدولية او تحديد الاماكن ذات الاهمية . اما طريقة الراستر فتستخدم بشكل مكثف في العلوم البيئية والطبيعية لرصد التضاريس الجغرافية. 
+
+## حزمة sf 
+
+حزمة sf والتي هي اختصار لـ simple feature تعد من الحزم القوية جدا في التعامل مع البيانات الجيوغرافية.
+حزمة sf تتبنى طريقة الفيكتور وهي حزمة قوية وانيقة 
+
+```{r}
+library("sf") 
+library("spData") # لتحميل خريطة العالم 
+library("dplyr") # للتعامل مع البيانات
+```
+البيانات في حزمة sf تكون بصيغة data frames مما يجعل التعامل معها ابسط واسهل. 
+كل سجل بالإمكان ان يحمل معلومات جغرافية وغير جغرافية. لكن العامود الدائم في كل تلك السجلات هو geom وهو عبارة عن قائمة تحمل المعلومات الجغرافية لكل سجل 
+
+```{r}
+names(world)
+```
+
+هذه الصيغة في فصل البيانات الجغرافية عن غيرها تجعل العمليات الاحصائية ممكنة على المتغيرات الغير جغرافية مثل العمر الإفتراضي للدول مثلا. 
+
+```{r}
+summary(world["lifeExp"])
+```
+
+هذه الميزة تجعل صنع الخرائط الجغرافية المعلوماتية عملية سهلة جدا 
+
+```{r, message=FALSE}
+# عرض جميع المتغيرات 
+plot(world)
+
+plot(world["pop"]) # عرض خريطة الكثافة السكانية 
+```
+ 
+بالإمكان ايضا عرض خرائط مخصصة لدولة معينة كالمملكة على سبيل المثال
+
+
+```{r}
+Asia<- world %>% filter(continent == "Asia") %>% st_union() 
+ksa <- world %>% filter(name_long == "Saudi Arabia") 
+plot(st_geometry(Asia))
+plot(st_geometry(ksa), lwd = 3, col = "gray", add = TRUE)
+
+
+```
+
+## استخدام حزمة Sf مع بيانات OpenStreetMap
+من المصادر العجيبة المجانية للمعلومات الجغرافية هي [OpenStreetMap](https://www.openstreetmap.org). الجميل في الأمر انه بالإمكان الاستفادة من القاعد البياناتية الضخمة والتعامل مع بياناتها بكل يسر بإستخدام حزمة sf. يمكن زيارة الموضع وتحميل البيانات مجانا. 
+
+```{r}
+library("here")
+Alhasa_file_path <- here("static", "data", "map")
+Alhasa_str <- st_read(Alhasa_file_path, layer ="lines") # تمثيل شوارع  الأحساء
+plot(st_geometry(Alhasa_str), main = "شوارع الأحساء") 
+plot(st_geometry(ksa), lwd = 3, alph = .3,col = rgb(173,216,230, max = 255 ,alpha = 100), add = TRUE)
+```
+```{r}
+library("leaflet")
+leaflet(Alhasa_str) %>% 
+  addPolylines()
+
+```
+
+هنا نحدد محافظة الاحساء ونحوله إلى صيغة sf 
+
+
+```{r}
+Riyadh_file_path <- here("static", "data", "map1")
+Riyadh <- st_read(Riyadh_file_path, layer ="lines") 
+plot(st_geometry(Riyadh), col = "blue")
+plot(st_geometry(ksa), lwd = 3, alph = .3,col = rgb(173,216,230, max = 255 ,alpha = 100), add = TRUE)
+```
+
+
+
+```{r}
+library("raster")
+raster_filepath = system.file("raster/srtm.tif", package = "spDataLarge")
+new_raster = raster(raster_filepath)
+```
+
+```{r}
+new_raster
+plot(new_raster)
+```
+
