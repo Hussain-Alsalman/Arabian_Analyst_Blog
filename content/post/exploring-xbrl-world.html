@@ -155,11 +155,13 @@ library(igraph)
 doc.graph &lt;-xbrl_data$calculation[which(xbrl_data$calculation$roleId == role_Id ),c(&quot;fromElementId&quot;, &quot;toElementId&quot;)]
 doc.viz &lt;- graph.data.frame(doc.graph)
 plot.igraph(doc.viz, vertex.label.color =&quot;black&quot;, vertex.label.cex = .5 ,vertex.color = &quot;Navyblue&quot;, layout = layout.reingold.tilford)</code></pre>
-<p><br />
-<img src="https://arabiananalyst.com/wp-content/uploads/2018/03/Financial-Statements.png" /></p>
+<div class="figure">
+<img src="/post/exploring-xbrl-world_files/Financial-Statements.png" />
+
+</div>
 <p>وفقط للحماس هذه قائمة الأصول</p>
 <div class="figure">
-<img src="http://arabianAnalyst.com/wp-content/uploads/2018/03/BalanceSheet.png" />
+<img src="/post/exploring-xbrl-world_files/BalanceSheet.png" />
 
 </div>
 </div>

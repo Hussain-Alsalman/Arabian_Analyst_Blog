@@ -1,8 +1,8 @@
-baseURL = "https://condescending-shannon-8fbceb.netlify.com"
+baseURL = "https://arabianAnalyst.com"
 languageCode = "en-us"
 title = "المحلل العربي"
 theme = "vanilla-bootstrap-hugo-theme"
-googleAnalytics = "UA-123456789-1"
+googleAnalytics = "UA-78901106-1"
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
 # Uncomment below to enable syntax highlighting

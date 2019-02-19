@@ -6,9 +6,10 @@ layout: post
 link: https://arabianAnalyst.com/2017/11/18/visualizing-twitter-followers-growth-ar/
 slug: visualizing-twitter-followers-growth-ar
 title: تحليل حركة نمو المتابعين في تويتر
-wordpress_id: 76
-categories:
-- دروس
+
+tags:
+  - مهارة
+  - إستحواذ البيانات
 ---
 
 حساب المدونة في تويتر تم انشاءه منذ فترة وجيزة جداً. لكن في يوم ٢٥ يونيو ٢٠١٦ ٫حدث ارتفاع غير معتاد في عدد المتابعين لحساب التويتر الخاص بالمدونة. ظللت اتلقى الكثير من الإشعارات بالبريد الإلكتروني لكل متابع جديد. الفكرة الأول التي كانت لدي هي ان اسرع إلى اعدادت تويتر وآقوم بتعطيل خاصية الإشعارات. لكن بعد حين استوعبت ان هذه الرسائل مليئة بالبيانات المهمة والتي بالإمكان تحليلها.
@@ -118,12 +119,6 @@ _تحذير: هذا قد يجعل حسابك أكثر عرضة لهجمات قر
 
 
 
-
-
-
-
-
-
 #### التصوير البياني
 
 
@@ -133,7 +128,7 @@ _تحذير: هذا قد يجعل حسابك أكثر عرضة لهجمات قر
     plot(dataDates, 1:length(dataDates), xlab = "", ylab= "followers" , col = "darkblue", type = "l", main = "Followers Growth")
 ```
 
-[![](http://arabianAnalyst.com/wp-content/uploads/2017/11/layeredmultichart-300x180.png)](http://arabianAnalyst.com/wp-content/uploads/2017/11/layeredmultichart.png)
+![](/post/visualizing-twitter-followers-growth-ar_files/layeredmultichart.png)
 
 يمكننا رؤية الازدياد في عدد المتابعين بتسارع أُسي خلال فترة 24 يونيو - 26 يونيو.
 
@@ -217,7 +212,7 @@ dbsExted <- cbind(dbFollow, days)
 table(dbsExted$days,dbsExted$email_from)
 ```
 
-[![](http://arabianAnalyst.com/wp-content/uploads/2017/11/Followers-Summary-300x229.png)](http://arabianAnalyst.com/wp-content/uploads/2017/11/Followers-Summary.png)
+![](/post/visualizing-twitter-followers-growth-ar_files/Followers-Summary.png)
 
 وكما نرى، كان هناك عدد كبير من المتابعين في 25 يونيو.
 
@@ -247,7 +242,7 @@ plot(
 )
 ```
 
-[![](http://arabianAnalyst.com/wp-content/uploads/2017/11/layeredmultichart-300x180.png)](http://arabianAnalyst.com/wp-content/uploads/2017/11/layeredmultichart.png)
+![](/post/visualizing-twitter-followers-growth-ar_files/layeredmultichart.png)
 
 في الرسم البياني أعلاه يظهر أن أول قفزة صغيرة في عدد المتابعين ربما كانت بسبب إعادة تغريدة. أما القفزة الثانية وهي الكبيرة فالسبب ليس واضحاً فيما إذا كانت بسبب ذكر من شخص معين او إعادة تغريدة. لذلك سوف نركز تحليلنا على هذه القفزة والتي تصادف ٢٥ يونيو.
 
@@ -273,7 +268,7 @@ points(mention25th, rep(10, length(mention25th)), col = "darkgreen", pch = 1)
 points(follow25th, rep(5, length(follow25th)), col = "darkblue", pch = 0)
 ```
 
-[![](http://arabianAnalyst.com/wp-content/uploads/2017/11/Timeline-300x150.png)](http://arabianAnalyst.com/wp-content/uploads/2017/11/Timeline.png)
+![](/post/visualizing-twitter-followers-growth-ar_files/Timeline.png)
 
 في الرسم البياني أعلاه، المربعات الزرقاء الداكنة هي عدد المتابعين، والدوائر الخضراء الداكنة هي عدد الذكر والمثلثات الحمراء الداكنة هي عدد إعادة التغريدات
 

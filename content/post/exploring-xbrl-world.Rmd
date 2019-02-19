@@ -251,12 +251,11 @@ doc.graph <-xbrl_data$calculation[which(xbrl_data$calculation$roleId == role_Id 
 doc.viz <- graph.data.frame(doc.graph)
 plot.igraph(doc.viz, vertex.label.color ="black", vertex.label.cex = .5 ,vertex.color = "Navyblue", layout = layout.reingold.tilford)
 ```
-\
-![](https://arabiananalyst.com/wp-content/uploads/2018/03/Financial-Statements.png)
+
+![](/post/exploring-xbrl-world_files/Financial-Statements.png)
 
 
 وفقط للحماس هذه قائمة الأصول
 
 
-
-![](http://arabianAnalyst.com/wp-content/uploads/2018/03/BalanceSheet.png)
+![](/post/exploring-xbrl-world_files/BalanceSheet.png)
