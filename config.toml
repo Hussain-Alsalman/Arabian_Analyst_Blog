@@ -53,7 +53,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
   # Styling
   customCss = "/css/my_custom.css"
   highlightjsCDN = ""
-  highlightingTheme = "monokai-sublime"
+  highlightingTheme = "atom-one-light"
   equationSize = 80
   profile_photo = "/images/personal_photo.jpg"
 

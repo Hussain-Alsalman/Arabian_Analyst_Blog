@@ -77,7 +77,7 @@ RStudio هو بيئة تطويرية متكاملة لبرنامج الـ R . ل
 
 في الصورة التالية سوف نناقش هذه النوافذ بشكل مختصر لكي نتعرف على وظائف هذه النوافذ
 
-[![](http://arabianAnalyst.com/wp-content/uploads/2017/11/RStudio-Main-Window-1024x798.png)](http://arabianAnalyst.com/wp-content/uploads/2017/11/RStudio-Main-Window.png)
+![](/post/r-rstudio-installation-with-brief-introduction-ar_files/RStudio Main Window.png)
 
 لاحظة هامشية: ألوان الخلفية قد تكون مختلفة عن ما تراه في جاهزك. هذا لأنني قمت بتغييرها إلى الوان داكنة حتى لا اجهد عيوني عندما اعمل لساعات طويلة على البرنامج. يمكنك تغيير الألوان عن طريق الذهاب إلى التالي Rstudio -> Preferences -> Appearance . انا قمت بإختيار cobalt ولكن يمكنك اختيار اي لون يروق لك.
 

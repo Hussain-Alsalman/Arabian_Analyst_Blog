@@ -1,15 +1,15 @@
 ---
 title: البيانات الجغرافية في لغة R
 author: Hussain
-date: '2019-02-12'
+date: '2019-02-25'
 slug: geography-in-r
 tags:
   - جيوغرافي
 draft: true
 ---
 
-```{r}
-knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
+```{r, echo= FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 ```
 
 ## مقدمة 
@@ -53,7 +53,6 @@ plot(world["pop"]) # عرض خريطة الكثافة السكانية
  
 بالإمكان ايضا عرض خرائط مخصصة لدولة معينة كالمملكة على سبيل المثال
 
-
 ```{r}
 Asia<- world %>% filter(continent == "Asia") %>% st_union() 
 ksa <- world %>% filter(name_long == "Saudi Arabia") 
@@ -81,15 +80,6 @@ leaflet(Alhasa_str) %>%
 ```
 
 هنا نحدد محافظة الاحساء ونحوله إلى صيغة sf 
-
-
-```{r}
-Riyadh_file_path <- here("static", "data", "map1")
-Riyadh <- st_read(Riyadh_file_path, layer ="lines") 
-plot(st_geometry(Riyadh), col = "blue")
-plot(st_geometry(ksa), lwd = 3, alph = .3,col = rgb(173,216,230, max = 255 ,alpha = 100), add = TRUE)
-```
-
 
 
 ```{r}
