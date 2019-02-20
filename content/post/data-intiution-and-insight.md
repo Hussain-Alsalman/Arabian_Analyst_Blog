@@ -1,6 +1,6 @@
 ---
 author: Hussain
-date: 2019-02-21 
+date: 2019-02-20 
 layout: post
 slug: data-intiution-and-insight
 link: https://arabianAnalyst.com/2019/02/20/data-intiution-and-insight/
