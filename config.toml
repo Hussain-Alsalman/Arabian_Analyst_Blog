@@ -70,3 +70,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
         name = "email"
         pre = "mail"
         link = "mailto:ArabianAnalyst@gmail.com"
+    [[params.social.contact]]
+        name = "RSS"
+        pre = "rss"
+        link = "/index.xml"
