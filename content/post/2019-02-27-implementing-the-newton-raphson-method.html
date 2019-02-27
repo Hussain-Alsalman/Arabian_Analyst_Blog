@@ -1,0 +1,72 @@
+---
+title: كيف أُنفّذ طريقة نيوتن رافسون في R ؟
+author: Hussain Alsalman
+date: '2019-02-27'
+slug: implementing-the-newton-raphson-method
+tags:
+  - سؤال وجواب
+---
+
+---
+title: كيف أُنفّذ طريقة نيوتن رافسون في R ؟
+author: Hussain Alsalman
+date: '2019-02-27'
+slug: implementing-the-newton-raphson-method
+tags:
+  - سؤال وجواب
+---
+
+
+
+<div id="--" class="section level3">
+<h3>السؤال هو كالتالي :</h3>
+{{% tweet "1100767424599781377" %}}
+</div>
+<div id="--" class="section level3">
+<h3>طريقة نيوتن رافسون</h3>
+<p>انا بصراحة ما سمعت عن الطريقة من قبل لذلك بحثت عنها ووجدتها طريقة بسيطة لكنها ذكية. الطريقة تهدف إلى إيحاد قيمة جذر المعادلة بطريقة عددية numerical solution. المعادلة هي كالتالي</p>
+<p><span class="math display">\[
+x_1 = x_0 - \frac{f(x_0)}{{f}&#39;(x_0)}
+\]</span></p>
+<p>اولا سوف نقوم بتمثيل هذه المعادلة في <code>R</code> ثم سنقوم بمتابعت تغير قيمة <span class="math inline">\(x\)</span> في المعادلة. لكن اولا نحتاج إلى مثال. في صفحة <a href="https://en.wikipedia.org/wiki/Newton%27s_method#Zero_derivative">ويكيبيديا</a> هناك مثال لهذه المعادلة <span class="math display">\[
+f(x)=x^3-1000x^2+1
+\]</span></p>
+<p>سوف نمثلها في الكود كدالة بهذه الطريقة</p>
+<pre class="r"><code>fx &lt;- function(x){
+  return(x^3-1000*x^2+1)
+}</code></pre>
+<p>اشتقاق المعادلة بتطبيق قوانين الإشتقاق سيكون هذه المعادلة <span class="math display">\[
+{f}&#39;(x)=3x^2-2000x
+\]</span> سوف نمثلها في الكود كدالة بهذه الطريقة</p>
+<pre class="r"><code>fx_p &lt;- function(x) {
+  return(3*x^2-2000*x)
+}</code></pre>
+<p>عند قراءة طريقة نيوتن رافسون تلاحظ انها حلقة ندور فيها من خلال تعويض المخرجات كمدخلات حتى نصل إلى قيمة الصفر للمعادلة. عندها تكون قيمة المتغير هي جذر المعادلة. هذا النمط من المنطق يعرف بالـ Recursion في علم الحاسب. وهو ان تقوم الدالة بنداء نفسها. لذلك سوف نقوم بتنفيذ الكود على هذا النمط.</p>
+<pre class="r"><code>newton_raphson &lt;- function(x) {
+  if (round(fx(x),dp) == 0) return(x)
+  else {
+     x_n[(n&lt;&lt;-n+1)] &lt;&lt;- x
+     x_plus_n &lt;-round((x - (fx(x)/fx_p(x))),20)
+    return(newton_raphson(x_plus_n))
+    }
+}</code></pre>
+<p>في المعادلة ستلاحظ انه يوجد متغيرات جديدة قمت بإضافتها للتحكم بسلوك الدالة فقط وهي - <code>n</code> رقم العملية - <code>x_log</code> فيكتور يقوم بتسجيل قيم المتغير لكل عملية - <code>dp</code> للتحكم بعدد بالمنازل العشرية للنتيجة (إذا كان العدد كبير فسوف تكون النتائج اكثر دقة لكنها قد تسبب في مشكلة <a href="https://en.wikipedia.org/wiki/Stack_overflow#Infinite_recursion">stack overflow</a>)</p>
+<p>هذه القيم لابد ان تنفذ كل مرة نقوم بعملية الحساب</p>
+<pre class="r"><code>x_n &lt;- rep(0,300) 
+n &lt;- 0
+dp &lt;- 50</code></pre>
+<p>الآن دعنا نرى النتائج</p>
+<pre class="r"><code>newton_raphson(1)</code></pre>
+<pre><code>## [1] 0.03162328</code></pre>
+<p>لإستعراض سلوك قيمة <span class="math inline">\(x\)</span>في المعادلة نقوم بهذه التصوير البياني</p>
+<pre class="r"><code>library(&quot;ggplot2&quot;)
+df &lt;- data.frame(x_n[which(x_n != 0)],1:10)
+names(df) &lt;- c(&quot;y&quot;, &quot;x&quot;)
+ggplot(df) +
+  geom_line(aes(x=x, y = y))+
+  ylab(expression(x[n]))+
+  xlab(&quot;iterations n&quot;)+
+  theme_bw()</code></pre>
+<p><img src="/post/2019-02-27-implementing-the-newton-raphson-method_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>في الختام أرجو ان تكون هذه الخطوات واضحة أن تجيب ولو على جزء كبير من السؤال.</p>
+</div>
