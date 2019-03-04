@@ -60,6 +60,10 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
  [params.social]
     [[params.social.contact]]
+        name = "linkedin"
+        pre = "linkedin"
+        link = "https://www.linkedin.com/in/hussainalsalman"
+    [[params.social.contact]]
         name = "github"
         pre = "github"
         link = "https://github.com/Hussain-Alsalman"

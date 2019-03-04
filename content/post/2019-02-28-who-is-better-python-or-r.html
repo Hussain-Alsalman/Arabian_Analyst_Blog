@@ -1,0 +1,101 @@
+---
+title: أيهما افضل R او Python.. الجواب :الإثنان معًا
+author: Hussain Alsalman
+date: '2019-02-28'
+slug: who-is-better-python-or-r
+tags: 
+  - حزم R
+---
+
+
+
+<p>منذ اصبح علم البيانات عنصر مهم وسبب لنجاح او فشل كثير من المؤسسات والشركات الكبيرة عالميا ومحليا,وهو منقسم إلي فريق البايثونين والآرستاتيين. هذا الإنقسام زاد قطبية مع ازدياد المصادر و المواقع التعليمية التي تقدم آلاف الدورات التدريبية في كل من اللغتين فالكثير من الطلاب والمهتمين الجدد يجدو انفسهم امام سؤال تحديد هوية وانتماء قبل أن يبدءون مشوارهم.</p>
+<p>فلا عجب أن يكون اكثر سؤال اتلقاه انا وأصدقائي المختصين على تويتر هو “أيهم افضل R او Python؟”. في السابق كنت انصح فقط بلغة R بينما ينصح الآخرون بلغة Python. الآن لازلت انصح بتعلم لغة R لكني ايضا انصح بتعلم لغة Python ايضا لأنه إن كنت فعلًا تريد ان تبحر في مجال علم البيانات فلابد أن يسع قلبك إلى اللغتين معًا. السبب هو ان لكل لغة مراكز قوة مختلفة فالإلمام بهما معا يفتح لك ابواب علم البيانات على مصراعيه. إن كنت من محبي “الكومكيس” فتعلم اللغتين هو ان تكون “سوبرمان” و “باتمان” في آن واحد.</p>
+<p><img class="rounded mx-auto d-block" src="/post/2019-02-28-who-is-better-python-or-r_files/DXiZ8DkVAAActu3.jpg" alt="" width="400px"/></p>
+<p>لا أخفيكم سرًا انني من المنتمين إلى حزب الآرستاتيين, لكن في هذه التدوينة احمل بشرى سارة لكل الحزبين. الآن يمكنك الدمج في نوت بوك واحد كل من اللغتين. بل بالإمكان البدء بلغة وإكمال التحليل باللغة الأخرى. وكل ذلك في ملف Rmarkdown في بيئة R.</p>
+<div id="-reticulate" class="section level3">
+<h3>حزمة <code>reticulate</code></h3>
+<p>هذه الحزمة توفر الكثير من الإمكانيات لتنفيذ اكواد Python بكل سهولة في بيئة R من تلك الإمكانيات هي</p>
+<ul>
+<li><p>تنفيذ اكواد Python سواء كانت عدة سطور او ملف سكريبت كامل. كذلك يمكنك ارفاق اي حزم تخص لغة البايثون</p></li>
+<li><p>الإنتقال بكل سلاسة من عناصر لغة R إلى الـPython والعكس. ذلك يعني اننا بالإمكان استخدام إيطار بيانات (Data Frame) من حزمة <code>pandas</code> إلى بيئة R بدون اي عناء.</p></li>
+<li><p>إمكانية استخدام عدة إصدارات من python في نفس النوت بوك.</p></li>
+</ul>
+</div>
+<div id="-" class="section level3">
+<h3>مثال سريع</h3>
+<p>في العادة نقوم بتحميل اي حزمة نريد ان نستخدمها عن طريق استخدام دالة <code>install.packages()</code>لكن الممارسة الأفضل للمبرمج الجيد هو ان نتحقق من وجود الحزمة اولا حتى نتفادى إعادة تحميل الحزمة كل مرة نقوم بتنفيذ الكود.</p>
+<pre class="r"><code>if(&quot;reticulate&quot; %in% rownames(installed.packages()) == FALSE) {
+  install.packages(&quot;reticulate&quot;)
+}
+library(&quot;reticulate&quot;)
+library(&quot;tidyverse&quot;)</code></pre>
+<p>ايضا من الممارسات الجيدة أن يكون لديك بيئة افتراضية لإصدار البايثون الذي تستخدمه لمشاريع علم البيانات بمنعزل عن إصدار البايثون الذي يستخدمه النظام . ذلك يساعدنا لتجنب اي مشاكل مع النظام فيما لو اردنا ان نستخدم إصدار مختلف. يمكننا إنشاء هذه البيئة عن طريق امر بسيط في <code>Command Line Interface</code>.</p>
+<pre class="bash"><code>cconda create -n dataScience python=3.6</code></pre>
+<p>حتى نتمكن من إستخدام البيئة التي قمنا بإنشاءها سوف نقوم بإستخدام دالة خاصة من <code>reticulate</code> وهي <code>use_condaenv()</code>. سوف ايضا نجعل استخدام تلك البيئة ضروريا.</p>
+<pre class="r"><code># بيئة آر
+use_condaenv(&quot;dataScience&quot;, required = T)</code></pre>
+<p>سوف نتأكد من النسخة التي لدينا عن طريق استخدام حزمة <code>sys</code>من بايثون لكن سوف نقوم بتحميلها عن طريق R
+كما نرى ادناه نسخة python تطابق النسخة التي خصصناها في البيئة الإفتراضية.</p>
+<pre class="r"><code># بيئة آر
+sys &lt;- import(&quot;sys&quot;)
+sys$version # لطباعة إصدار البايثون</code></pre>
+<pre><code>## [1] &quot;3.6.7 |Anaconda, Inc.| (default, Oct 23 2018, 19:19:38) \n[GCC 7.3.0]&quot;</code></pre>
+<p>سوف نقوم بإستخدام قاعدة البيانات المتوفرة في بيئة R ونقلها إلى بيئة الـ Python</p>
+<pre class="r"><code># بيئة آر
+aq &lt;- airquality 
+head(aq)</code></pre>
+<pre><code>##   Ozone Solar.R Wind Temp Month Day
+## 1    41     190  7.4   67     5   1
+## 2    36     118  8.0   72     5   2
+## 3    12     149 12.6   74     5   3
+## 4    18     313 11.5   62     5   4
+## 5    NA      NA 14.3   56     5   5
+## 6    28      NA 14.9   66     5   6</code></pre>
+<p>الآن يمكننا الحصول على تلك البيانات من خلال الـ Object <code>r</code>. سوف نقوم برسم جزء من تلك البيانات حتى نتأكد من وجودها فعلا في بيئة الـpython.</p>
+<pre class="python"><code>#بيئة بايثون 
+import pandas 
+import matplotlib.pyplot as plt
+air_py = r.aq # بإمكاننا الحصول على البيانات من عنصر آر الذي ارفقه النظام لنا في بيئة بايثون
+
+# تصوير مستويات درجة الحرارة في مدينة نيويورك
+plt.plot(air_py[&quot;Temp&quot;].dropna())
+plt.title(&quot;New York Air Quality Measurements-(May-Sept 1973)\nTemperature (degrees F)&quot;)
+plt.xlabel(&quot;#Day&quot;)
+plt.ylabel(&quot;Degrees F&quot;)</code></pre>
+<p><img src="/post/2019-02-28-who-is-better-python-or-r_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>دعنا الآن نعرّف دالة في بيئة Python لنقوم بإستخدامها في بيئة R</p>
+<pre class="python"><code># بيئة بايثون
+def month_num_to_str(df,k):
+    df_py = df[k]
+    mon_lookup = {1 : &quot;January&quot;,
+                2: &quot;February&quot;,
+                3: &quot;March&quot;,
+                4: &quot;April&quot;,
+                5: &quot;May&quot;,
+                6: &quot;June&quot;,
+                7: &quot;July&quot;,
+                8: &quot;August&quot;, 
+                9: &quot;September&quot;, 
+                10: &quot;October&quot;, 
+                11: &quot;November&quot;,
+                12: &quot;December&quot;}
+    return df_py.map(mon_lookup)</code></pre>
+<p>في الكود اعلاه قمنا بتعريف دالة تقوم بتحويل الشهور من الأرقام إلى الأسماء. دعنا الآن نستخدمها في بيئة R</p>
+<pre class="r"><code># بيئة آر
+aq[&quot;Month_Str&quot;] &lt;-  py$month_num_to_str(aq, &quot;Month&quot;)
+
+head(aq)</code></pre>
+<pre><code>##   Ozone Solar.R Wind Temp Month Day Month_Str
+## 1    41     190  7.4   67     5   1       May
+## 2    36     118  8.0   72     5   2       May
+## 3    12     149 12.6   74     5   3       May
+## 4    18     313 11.5   62     5   4       May
+## 5    NA      NA 14.3   56     5   5       May
+## 6    28      NA 14.9   66     5   6       May</code></pre>
+<p>نجد هنا ان الدالة التي قمنا بتعريفها في بيئة البايثون انتقلت بطريقة اشبه ما تكون سحرية إلى بيئة R . هذه الطريقة تمكننا من الإستفادة من قوة البايثون ومرونته في تنفيذ الأوامر المعقدة حيث يمكننا تعريف مجموعة من الدوال المساعدة في ملف <code>helpers.py</code> وإستخدامها في بيئة R بكل سهولة.</p>
+</div>
+<div class="section level3">
+<h3>الخلاصة</h3>
+<p>لكل من لغة آر ولغة بايثون منحنى تعلم “learning curve” يتطلب أستثمار الكثير من الوقت حتى تتمكن بشكل ممتاز من اي منهما. لكن لا تدع هذا الأمر يعرقل مسيرتك نحو تعلم علم البيانات. نصيحتي انضم إلى اي من الحزبين الآن وإذا وصلت لمرحلة متقدمة تذكر انه بإمكانك المغامرة واستكشاف المجهول بكل سهولة في العالم الآخر. السؤال لا يجب أن يكون اي اللغتين افضل بل “ايهما يمكنني من تحقيق هدفي بشكل اكثر فاعلية” والإجابة على ذلك دائما <a href="https://twitter.com/Arabian_Analyst/status/1084732406404399104">يعتمد على ..</a></p>
+</div>
