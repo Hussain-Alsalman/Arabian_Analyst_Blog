@@ -31,12 +31,11 @@ tags:
 library(&quot;reticulate&quot;)
 library(&quot;tidyverse&quot;)</code></pre>
 <p>ايضا من الممارسات الجيدة أن يكون لديك بيئة افتراضية لإصدار البايثون الذي تستخدمه لمشاريع علم البيانات بمنعزل عن إصدار البايثون الذي يستخدمه النظام . ذلك يساعدنا لتجنب اي مشاكل مع النظام فيما لو اردنا ان نستخدم إصدار مختلف. يمكننا إنشاء هذه البيئة عن طريق امر بسيط في <code>Command Line Interface</code>.</p>
-<pre class="bash"><code>cconda create -n dataScience python=3.6</code></pre>
+<pre class="bash"><code>conda create -n dataScience python=3.6</code></pre>
 <p>حتى نتمكن من إستخدام البيئة التي قمنا بإنشاءها سوف نقوم بإستخدام دالة خاصة من <code>reticulate</code> وهي <code>use_condaenv()</code>. سوف ايضا نجعل استخدام تلك البيئة ضروريا.</p>
 <pre class="r"><code># بيئة آر
 use_condaenv(&quot;dataScience&quot;, required = T)</code></pre>
-<p>سوف نتأكد من النسخة التي لدينا عن طريق استخدام حزمة <code>sys</code>من بايثون لكن سوف نقوم بتحميلها عن طريق R
-كما نرى ادناه نسخة python تطابق النسخة التي خصصناها في البيئة الإفتراضية.</p>
+<p>سوف نتأكد من النسخة التي لدينا عن طريق استخدام حزمة <code>sys</code>من بايثون لكن سوف نقوم بتحميلها عن طريق R كما نرى ادناه نسخة python تطابق النسخة التي خصصناها في البيئة الإفتراضية.</p>
 <pre class="r"><code># بيئة آر
 sys &lt;- import(&quot;sys&quot;)
 sys$version # لطباعة إصدار البايثون</code></pre>

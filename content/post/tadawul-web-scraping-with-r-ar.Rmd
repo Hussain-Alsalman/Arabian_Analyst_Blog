@@ -81,11 +81,11 @@ tags:
 
 يفترض ان تفتح لك هذه النافذة
 
-[![](http://arabianAnalyst.com/wp-content/uploads/2017/12/TadawulPlot1-300x142.png)](http://arabianAnalyst.com/wp-content/uploads/2017/12/TadawulPlot1.png)
+<img class="rounded mx-auto d-block" src="/post/tadawul-web-scraping-with-r-ar_files/TadawulPlot1.png" alt="" width="500px"/>
 
 الآن افتح موقع تداول وروح إلى صفحة المؤشر راح تشوف ان البرنامج بدأ برصد جميع الطلبات الي صارت خلف الكواليس كما هو في الصورة ادناه.
 
-[![](http://arabianAnalyst.com/wp-content/uploads/2017/12/TadawulPlot2-300x138.png)](http://arabianAnalyst.com/wp-content/uploads/2017/12/TadawulPlot2.png)
+<img class="rounded mx-auto d-block" src="/post/tadawul-web-scraping-with-r-ar_files/TadawulPlot2.png" alt="" width="500px"/>
 
 هذه الطلبات هي الي بنستخدمها لكتابة الكود. رابط تداول لبيانات شركة معينة يحتوي على ٧٠ متغير. لحسن الحظ, كل ما يمهنا هو اربع متغيرات فقط وهم رمز الشركة والفترة (من تاريخ إلى تاريخ معين) و رقم الصفحة. موقع تداول يعرض فقط ثلاثين سجل لكل طلب. لذلك نحتاج رقم الصفحة لتصفح وجمع كل البيانات الي طلبناها. لو ننسخ الطلب بدون اي تعديل راح نحصل على البيانات وحدها لكن بتنسيق غريب. هذا التنسيق هو ما يعرف بالجيسون JSON. هذا التنسيق في انتشار كبير حاليا وتستخدمه مواقع كبيرة مثل الفيسبوك والتويتر. لحسن الحظ هناك حزمة في لغة الـ R راح تساعدنا كثير في قراءة البيانات من الملفات بتنسيق الجيسون. الرابط سيكون بالشكل التالي
 
