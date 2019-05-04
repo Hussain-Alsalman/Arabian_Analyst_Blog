@@ -14,5 +14,5 @@ title: "عني؟"
 ### إنجازات
 - مؤسس لمدونة المحلل العربي المتخصصة حول علم البيانات
 - قمت بتقديم عدد من الدورات التدريبية للمهتمين بعلم البيانات من خلال شراكة جميلة بيني وبين كل من [Techie Bitz](https://twitter.com/Techie_bits/status/838342328955846656) و [أتعلم عن بعد](https://twitter.com/onlineatalm1/status/929393499316932608).
-- قمت بتأسيس [Sharqiyah Data Geeks](https://www.meetup.com/Sharqiyah-Data-Geeks/) من خلال شراكة جميلة مع المجتمع السعودي للبيانات.
+- شاركت بتأسيس [Sharqiyah Data Geeks](https://www.meetup.com/Sharqiyah-Data-Geeks/) من خلال شراكة جميلة مع المجتمع السعودي للبيانات.
 - ساهمت في التحكيم [لداتاثون وزارة الإعلام](https://twitter.com/CGCSaudi/status/1063845819093319681) الذي اقيم عام 2018 في الرياض
