@@ -1,7 +1,7 @@
 ---
 title: البيانات الجغرافية و ٢٣ قرية أحسائية
 author: Hussain
-date: '2019-06-08'
+date: '2019-06-07'
 slug: geography-in-r
 tags:
   - جيوغرافي
