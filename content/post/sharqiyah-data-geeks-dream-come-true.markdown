@@ -7,7 +7,7 @@ link: https://arabianAnalyst.com/2018/08/01/sharqiyah-data-geeks-dream-come-true
 slug: sharqiyah-data-geeks-dream-come-true
 title: داتا غيكس الشرقية حلم يتحقق
 tags:
-- قصص
+- آراء
 ---
 
 ### الحلم
