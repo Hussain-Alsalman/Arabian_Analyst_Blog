@@ -1,0 +1,246 @@
+---
+title: النمذجة و موازنة الانحياز والتباين
+author: 'Hussain'
+date: '2020-02-19'
+slug: bias-vs-variance
+categories: []
+tags:
+  - نظري
+draft: false
+---
+
+## التحفيز 
+ 
+
+من وقت إلى آخر اجد نفسي أتصفح كتاب [Elements of Statistical Learning](https://web.stanford.edu/~hastie/ElemStatLearn/printings/ESLII_print12.pdf). الكتاب يحوي على الكثير من الإضاحات والرسومات البيانية لكن لفت انتباهي الرسومات الموجودة حول موضوع موازنة الإنحياز والتباين.  هذا الموضوع مهم جدا والكثير  يخفى عليه عواقب  إهماله. لذلك قررت أن ادون حول الموضوع وأبعث الحياة لتلك الرسومات البيانية.  
+
+## نبذة عن نظرية التعلم الإحصائي 
+
+
+[نظرية التعلم الإحصائي](https://en.wikipedia.org/wiki/Statistical_learning_theory) هي أحد ابعاد المنهج العلمي الذي أسسه [إبن الهيثم](https://ar.wikipedia.org/wiki/ابن_الهيثم). النظرية توفر نطاق عمل لتطوير نماذج تنبؤية يمكن تقديرها من خلال البيانات المجمعة. بشكل مبسط, النظرية تنص على وجود دالة حقيقية تفسر علاقة متغير معين بمتغير آخر أو عدة متغيرات. هذه الدالة دائما ما تكون مجهولة. لذلك يقوم الباحثين بجمع البيانات لتقدير تلك الدالة. هذه الدوال الحقيقة ليست سهلة في التقدير لأنها تضم عوامل لامتناهية. لحسن الحظ, كثير من تلك العوامل بإمكاننا تجاهلها لضئل تأثيرها على المخرجات النهائية. في الحقيقة علماء الإحصاء يصفون تلك العوامل بالضجيج أو معامل العشوائية. يمكننا تمثيل ما ذكرناه رياضيا كالتالي 
+
+
+$$
+Y = f(x) + \epsilon 
+$$
+
+## صعوبات التقدير
+
+
+طرق تقدير الدالة الحقيقة كثيرة و متعددة لن نفصل فيها في هذه التدوية لكن كلها تتشارك في خطة سير العمل.  
+
+1. جمع  البيانات 
+2. قسمة البيانات إلى مجموعتين. (مجموعة تدريب و  مجموعة اختبار)
+3. تحديد عدد  و نوع المدخلات للنموذج 
+4. صنع نموذج تقديري للدالة الحقيقة بإستخدام مجموعة التدريب وتقليص الخطأ 
+5. تقييم النموذج بإستخدام مجموعة الاختبار 
+
+بالنظر إلى هذه الخطوات, قد يتبادر إليك أن عملية التقدير سهلة. لكن الحقيقة هي ان في كل خطوة هناك موارد كثيرة للخطأ. ففي خطوة جمع البيانات مثلا يشترط على الباحث أن يقوم بجمع بيانات خالية من [انحيازات كثيرة](https://en.wikipedia.org/wiki/Bias#Statistical_biases)  حتى تمثل العينة بشكل صحيح ارض الواقع. كذلك الأمر نفسه ينطبق على خطوة قسمة البيانات. لكن الصعوبة الحقيقة والخطأ الذي يقع فيه الكثير من الباحثين هو تحديد عدد ونوع المدخلات للنموذج. لأن زيادة عدد المدخلات يؤدي إلى فرص التخصيص(التباين) وقلتها يؤدي إلى فرط التعميم (الانحياز). 
+
+## موازنة الانحياز والتباين 
+جهلنا بعوامل الدالة الحقيقية يضعنا في مأزق. فنحن لا نعرف أي من تلك العوامل له تأثير كبير وأيها مجرد ضجيج. أحد الحيل التي ابتكرها الإحصائيون هو قسمة البيانات إلى مجموعتي تدريب واختبار. هذه الحيلة تساعدنا على حل هذه المعضلة. الهدف هنا أن نستنتج نموذج يقلل مقدار الخطأ في كلتا المجموعتين.  حتى نشهد هذه  مدى فاعلية هذه الحيلة سوف أقوم بصنع عدة محاكاة تجسد اداء النموذج في كلتا المجموعتين مع زيادة عدد العوامل تدريجيا.   
+
+### محاكاة تقدير النموذج 
+
+##### الدالة الحقيقة  
+
+
+لنفترض ان الدالة الحقيقة هي كالتالي 
+
+$$
+f(x) = 2\sin(x) +0.2x 
+$$
+```{r loading_libraries, echo = FALSE, include=FALSE, warning=FALSE, message=FALSE}
+library("ggplot2")
+library("gganimate")
+library("dplyr")
+library("magrittr")
+library("broom")
+library("purrr")
+library("tidyr")
+library("forcats")
+knitr::opts_chunk$set(echo = FALSE)
+```
+وهذه شكل الدالة 
+
+```{r}
+set.seed(60)
+lim = 300
+x_lim = 15
+pram <- 40 
+t_fun <- function(x) 2*sin(x)+x*.2
+X <- seq(1,x_lim,length.out = lim)
+Y <- t_fun(X)
+y <- t_fun(X) + rnorm(length(X))*mean(t_fun(X))
+split_df <- sample(c("Training","Testing"), lim,replace = TRUE, prob = c(0.6,0.4))
+sim_df<- data.frame(y=y ,X=X, Y=Y, set_type = split_df,shape = "L")
+
+fun_g <- 
+  ggplot(sim_df, aes(y=Y, x=X, shape = shape, group = shape)) +
+  geom_line(show.legend = TRUE) +
+  scale_shape_discrete(name = "", breaks = "L",labels = "True Function") 
+
+fun_g
+```
+
+هذه الدالة تفسر ارتباط المتغير $y$ بالمتغير $x$ . تذكر نحن نجهل هذه الدالة ومهمتنا تقديرها
+
+#### مجموعة التدريب والإختبار 
+
+
+لنفرض أننا قمنا بجمع البيانات حول $y$ و $x$  ثم قسمناها إلى مجموعتين وقمنا بتصويرها كالتالي 
+
+```{r Collected_data}
+fun_g <-fun_g + 
+  geom_point(mapping = aes(y = y, x = X,colour = set_type)) + 
+  theme_bw()  + 
+  labs(title = "f(x), Training & Testing datasets") + 
+  scale_color_discrete(name = "Data Sets", breaks = c("Training","Testing"), labels = c("Train","Test")) 
+fun_g
+```
+لاحظ أن البيانات لا تنطبق على خط الدالة الحقيقة لأنها تحتوي على ضجيج عشوائي 
+
+#### تحديد عدد الحدود للنموذج
+
+الآن دعنا نبدأ بتصوير الدالة المقدرة مع زيادة عدد الحدود فيها بحد واحد وسوف نزيد عدد الحدود في كل مرة. 
+
+```{r fourty_models_simulation}
+tr_df <- sim_df %>% filter(split_df == "Training")
+te_df <- sim_df %>% filter(split_df == "Testing")
+models <- as.list(rep(NA,pram))
+for(i in 1:pram){
+  models[[i]] <- lm(paste0("y~poly(X,",i,",raw = TRUE)"), data = tr_df)
+}
+mat_df <- matrix(nrow =length(models[[1]]$fitted.values),ncol=pram)
+for (i in 1:pram) { 
+  mat_df[,i] <- models[[i]]$fitted.values
+}
+
+fit_df <- cbind(tr_df,mat_df) 
+fit_df<- fit_df %>% 
+  gather("mdl", "fitted_values",-y,-X,-Y,-set_type,-shape) %>% 
+  mutate(rs = ((y-fitted_values)^2)) %>% 
+  mutate(mdl = fct_reorder(mdl, rs,"sum", .desc = TRUE))
+
+g_animated <-fun_g +
+  geom_line(data = fit_df, mapping = aes(x = X, y = fitted_values, group = mdl), color = "blue") +
+  transition_states(states = mdl,transition_length = 45,state_length  = 3) +
+  labs(subtitle = "number of parameters: {closest_state}")+
+  coord_cartesian(clip = 'on') 
+
+
+```
+```{r, echo = TRUE}
+#full code to create "g_animated" is avialable on my github 
+#https://github.com/Hussain-Alsalman/Arabian_Analyst_Blog/blob/master/content/post/2020-02-15-bias-vs-variance.Rmd
+animate(g_animated,fps = 5)
+```
+
+لاحظ تغير شكل الدالة المقدرة باللون الأزرق مع زيادة عدد الحدود. تبدأ المحاكاة بحد واحد فقط وهذا خط مستقيم  وهو غير كافي لتقدير الدالة الحقيقة (فرط التعميم). في حين أن النموذج التقديري يظهر تحسن كبير عندما نصل إلى ثمان حدود. لكن مع زيادة العوامل يبدأ النموذج بالتعرج ومحاولة استيعاب الضجيج  (فرط التخصيص). 
+
+
+##### الأداء في مجموعة التدريب والأختبار 
+
+
+دعنا الآن نستطلع أثر زيادة عدد الحدود في النموذج على متوسط الخطأ لكل من المجموعتين (التدريب والاختبار). حتى نتمكن من ذلك, سنقوم بمحاكاة بناء النموذج ألف مرة لكل حد وحساب متوسط الخطأ.      
+
+```{r simulation, warning=FALSE}
+simulation = 1000
+sample_size = 1000
+x_lim = 15
+pram = 30
+s = 0
+m = 0
+train_errors <- matrix(nrow = pram, ncol = simulation)
+test_errors <- matrix(nrow = pram, ncol = simulation)
+
+  
+for (s in 1:simulation) { 
+  
+  x <- seq(1,x_lim, length.out = sample_size)
+  y <- t_fun(x) + rnorm(length(x),sd =2.2)*mean(t_fun(x))
+  idx <- sample(c("Tr","Te"), sample_size,replace = TRUE, prob = c(0.6,0.4))
+  sim_df<- data.frame(y=y ,x=x,  set_type = idx)
+  te <- sim_df[which(sim_df$set_type == "Te"),]
+  tr <- sim_df[which(sim_df$set_type == "Tr"),]
+ for (m in 1: pram){
+   the_model <- lm(paste0("y~poly(x,",m,",raw = TRUE)"), data = tr)
+    train_errors[m,s] <- ModelMetrics::mse(tr$y, predict(the_model))
+    test_errors[m,s] <- ModelMetrics::mse(te$y, predict(the_model,newdata = te))
+    
+ }
+} 
+
+```
+
+```{r}
+simulated_df<- data.frame(pram = 1:pram, training = rowMeans(train_errors,na.rm = TRUE),testing = rowMeans(test_errors,na.rm = TRUE)) 
+
+df <- simulated_df %>%  gather("data_type","mse",-pram)
+
+te_tr_g<-ggplot(df, aes(pram, mse, group = data_type)) + 
+  geom_line(aes(color = data_type), show.legend = FALSE) + 
+  geom_segment(aes(xend = 31, yend = mse), linetype = 2, colour = 'grey') + 
+  geom_point(size = 2) + 
+  geom_text(aes(x = 31, label = data_type), hjust = 0) + 
+  transition_reveal(pram) + 
+  coord_cartesian(clip = 'off') + 
+  labs(title = 'MSE and model flexibility', y = 'MSE',x = "Number of parameters" ) + 
+  theme_minimal() + 
+  theme(plot.margin = margin(5.5, 40, 5.5, 5.5))
+```
+```{r, echo = TRUE}
+#full code to create "te_tr_g" object is avialable on my github 
+#https://github.com/Hussain-Alsalman/Arabian_Analyst_Blog/blob/master/content/post/2020-02-15-bias-vs-variance.Rmd
+animate(te_tr_g,fps = 8)
+```
+
+```{r}
+ #simulated_df %>% 
+   intrpl_tr <-seq(0,max(simulated_df$training),.1)
+   intrpl_te <- seq(0, max(simulated_df$testing), along.with = intrpl_tr)
+   test <-c(-1*intrpl_te,0,intrpl_te)
+   train <- c(-1*intrpl_tr,0,intrpl_tr)
+ polygon_df <-  data.frame(train,test) 
+  
+rec_g <-ggplot(polygon_df) +
+  geom_tile(aes(x = 1, y = test, fill = test), show.legend = FALSE) +
+  scale_x_discrete(limits=c(-2,2),breaks=1) +
+  scale_fill_gradient2(low = 'darkblue', mid ='white', high = 'darkblue', midpoint = 0) + 
+  geom_text(aes(x = 1, y = -20, label = "Bias")) + 
+  geom_text(aes(x = 1, y = 20, label = "Variance")) + 
+  theme_void() +
+  coord_flip() + 
+  labs(title = "Bias-Variance Tradeoff" )
+
+z_testing <- c(scales::rescale(simulated_df$testing[1:8],c(0,-10)),scales::rescale(simulated_df$testing[9:30],c(0,10)))
+sim_z <- cbind(simulated_df, z_testing)
+anim <-rec_g + 
+  geom_segment(sim_z, mapping = aes(x=0,xend = 2,yend = z_testing,y=z_testing)) +
+  geom_text(sim_z,mapping=aes(x = 2.5, y = z_testing,label = paste0("number of paramters\n", pram))) + 
+   transition_states(states = z_testing) +
+   enter_fade() +
+   exit_shrink() +
+   ease_aes('sine-in-out')
+```
+```{r, echo = TRUE}
+#full code to create "anim" object is avialable on my github 
+#https://github.com/Hussain-Alsalman/Arabian_Analyst_Blog/blob/master/content/post/2020-02-15-bias-vs-variance.Rmd
+animate(anim,fps = 8)
+```
+
+لاحظ أننا بدأنا بمتوسط خطأ كبير لكلتا المجموعتين وذلك بسبب فرط التعميم أي ان النموذج بسيط جدا وليس كافي لتقدير الدالة الحقيقية. لكن مع زيادة عدد الحدود بين ٦ و ٨  تمكنا من تقليص متوسط الخطأ في كلتا المجموعتين. 
+
+ لاحظ أن متوسط الخطأ يستمر في الهبوط في مجموعة التدريب بينما يبدأ بالإرتفاع في مجموعة الأختبار وذلك بسبب فرط التخصيص أي ان النموذج لا يمكن استخدامه بشكل عام بل هو خاص بمجموعة التدريب.      
+
+## الخلاصة 
+موازنة الانحياز والتباين هو شَرَكًا نصبته الطبيعة لتحدي علماء البيانات ولقد وقع فيه الكثير. لذلك يجدر بعالم البيانات أن يتخذ الخطوات الازمة لتفادي  الوقوع في فرط التخصيص والتعميم للنماذج التي يقوم بتطويرها. هناك طرق كثيرة لم يسعنا التطرق إليها لتجنب هذا الخطأ منها 
+-  التحقق المتقاطع (Cross Validation)
+- جمع بيانات اكبر 
+- استخدام طريقة الضبط (regularization)
+
+#### شكر 
+  
+ 1.    [فريق عمل](https://www.nmthgiat.com/translators-and-methodology/) نمذجيات لترجمة [المصطلحات](https://www.nmthgiat.com/terminology/)
+ 2.  مؤلفي كتاب Elements of Statistical Learning , [ترفر](https://web.stanford.edu/~hastie/) و [روبرت](https://statweb.stanford.edu/~tibs/) 
+
