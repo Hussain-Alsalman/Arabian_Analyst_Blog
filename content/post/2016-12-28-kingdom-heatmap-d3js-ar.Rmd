@@ -1,0 +1,647 @@
+---
+title: 'الكثافة السكانية: خارطة حرارية للمملكة بإستخدام D3.js و R'
+author: 'Hussain'
+date: '2020-02-21'
+slug: kingdom-heatmap-d3js-ar
+categories: []
+tags:
+  - جيوغرافي
+  - تفاعلي
+---
+
+### مقدمة 
+في هذا المقال سنتحدث عن جانب مهم من جوانب تحليل البيانات وهو[ تصوير البيانات (Data Visualization)](https://ar.wikipedia.org/wiki/تصوير_بيانات). وكالعادة سوف نتجنب السطحية في الطرح لذلك راح نركز على قسم محدد من تصوير البيانات كي نتمكن مع إرفاق مثال تطبيقي للموضوع. مقالنا سوف يستعرض “تصوير البيانات الجغرافية المكانية” او ما يعرف بالـ [(Geovisualization)](https://en.wikipedia.org/wiki/Geovisualization). هذا النطاق من تصوير البيانات ازدادت شعبيته بشكل كبير في الآونة الأخيرة. حيث بدأت الكثير من الشركات والمؤسسات والحكومات تعتمده في صنع القرار. يا ترى لماذا؟
+
+اهم سبب يعود إلى نقطة بسيطة، وهو رغم التقدم التكنلوجي إلا أن الإداة المألوفة جدا بقيت نفسها وهي الخارطة. منذ كنا صغار كان لدينا خارطة الكنز ثم كبرنا قليل و بدأنا نتابع احوال الطقس بالنظر للخارطة على التلفزيون  ثم وصل بنا الأمر أنه بإمكان اي منا إرسال موقعه الحالي عبر برامج التواصل (كمثال WhatsApp). العامل المشترك بين كل تلك المراحل هو أن الخارطة هي بطلة الموقف.
+قبل أن نبدأ في الموضوع أحب ان اشكر [الأخ أسامة](https://twitter.com/OAlotaik) على حواره معي حول كيفية الحصول على ملفات الخرائط البيانية وتصويرها. أيضا دافع آخر لهذا المقال هو أنه خلال زيارتي  للرياض  في شهر نوفمبر حضرت [مؤتمر البيانات الضخمة](http://web.archive.org/web/20161029230013/http://events.kacst.edu.sa/ar/IT16/Pages/topic.aspx). هناك قام [الدكتور آنس الفارس](https://twitter.com/afalfaris) بعرض أحد ابحاث مركز الملك عبد العزيز للتقنية والذي كان يتناول [موضوع تحليل وتصوير للبيانات بجميع اصعدتها لمدينة الرياض](https://www.kacst.edu.sa/arb/RD/Pages/content.aspx?dID=26).
+
+### الهدف
+هدفنا اليوم بسيط وكلاسيكي وهو تصوير الكثافة السكانية في المملكة حسب المناطق الإدارية الثلاثة عشر بطريقة خارطة حرارية. بالإضافة إلى ذلك، نريد ان تكون تلك الخارطة تفاعلية ايضا.
+
+#### الأدوات المستخدمة و المهارات المطلوبة
+القائمة التالية هي مجموعة من الأدوات التي استخدمتها لتصميم الخارطة التفاعلية. الإلمام بها ولو بشكل بسيط هو أمر آختياري ولكنه سيساعدك كثيرا إلى فهم الكود و طريقة تصميم الخارطة.
+
+1. R
+2. JavaScript
+3. HTML
+4. D3.js
+5. TopoJson.js
+6. Data : Shapefiles, excel
+
+
+#### المصادر:
+لرسم هذه الخريطة استعنت بالمصادر التالية
+
+- [ الهيئة العامة للإحصاء](https://www.stats.gov.sa/sites/default/files/twzy_lskn_fy_lmnzq_ldry.xlsx)
+- [هيئة المساحة الجيولوجية السعودية](https://sgs.org.sa)
+- موقع [ Global Administration Areas](http://gadm.org/country)
+- كتاب [Learning D3.js Mapping](https://www.amazon.com/Learning-D3-js-Mapping-Thomas-Newton-ebook/dp/B00RP13CPC/ref=dp_kinw_strp_1) 
+- توثيق [D3.js Documentation](https://github.com/d3/d3/wiki)
+
+### خطة العمل
+
+1. جمع البيانات المطلوبة وهي (البيانات الجيوغرافية للمملكة على المستوى المناطق الإدارية،  عدد سكان المملكة على مستوى المناطق الإدارية، مساحات المناطق الإدارية)
+2. دمج البيانات في ملفات بتنسيق  TopoJson
+3. تصميم الخريطة وتهيئتها لتصوير البيانات
+4. من الجدير بالذكر هو أن رغم بساطة الخريطة التي سنصممها إلا أنه بداية جيدة لشمل معلومات أخرى في الخارطة (مثال: عدد الذكور والإناث لكل منطقة حسب الجنسية).
+
+### جمع البيانات
+
+بإمكاننا الحصول على بيانات عدد السكان  لكل منطقة بتفاصيلها من موقع الهيئة العامة للإحصاء كذلك يمكننا الحصول على مساحة كل منطقة في المملكة من موقع هيئة المساحة الجيولوجية السعودية. كل ما تبقى لنا هنا هو الحصول على ملف الخارطة الرقمي بصيغة shapefiles وذلك متوفر على موقع Global Administration Areas المجاني. هذا كل ما يتوجب علينا فعله من ناحية جمع البيانات
+
+### تنقيح ودمج البيانات
+
+كما تلاحظ، البيانات التي حصلنا عليها متفرقة ومصادرها و صيغ ملفاتها كلها مختلفة. لذلك يجب علينا تنقيحها ودمجها في ملف ذو صيغة مفضلة لدينا يسهل التعامل معها. حاليا لدينا الملفات التالي
+- ملف اكسل من موقع هيئة الإحصاء. (هذه الملفات كبيرة في العادة. آيضا “عقيمة” عندما يأتي الأمر إلى وضعها على الويب)
+- ملف شيب فايل shapfiles وهو الخريطة الرقمية للمملكة (هذا الملف ايضا “على عيني وراسي” وهو الصيغة المعترف بها عالميا في الخرائط المعلوماتية ولكنه  ايضا “عقيم” مع الإنترنت لحجمه الكبير جدا)
+- ملف اكسل من موقع هيئة المساحة الجيولوجية ( نفس الكلام عن ملفات الأكسل)
+
+
+
+بما أننا سوف نتعامل مع d3.js يجب علينا معرفة اي الصيغ التي تقبلها مكتبة d3. في هذه الحالة الصيغة هي GeoJSON وهي ايضا صيغة بدأت تنمو شعبيتها بشكل كبير. لكن المشكلة هنا هي أن هذه الصيغة ايضا ثقيلة الوزن. طبعا سبب اهمية حجم الملف بالنسبة لنا هو إنعكاس الأداء على تجربة الزائرين للموقع (تخيل تنتظر خمس دقايق علشان تشاهد الخريطة؟؟). بس ولا يهمك،  راح نستخدم إستراتيجية ابداعية نتفادى هذه المعضلة كلها.
+ 
+الإستراتيجية: ندمج الملفات كلها ونطلعها على صيغة TopoJSON وهي صيغة خفيفة جدا (تختصر لنا ٨٠٪ من حجم الملف الأصلي). بعد رفع الملف الصغير على الموقع نقوم بتحويلها إلى GeoJSON بإستخدام جافا سكريبت والتي تستخدم القوة الحاسوبية للمستخدم نفسه (client-side) … قلت لك ابداع 🙂
+اختصار ملفات الأكسل في ملف CSV لتحضيرها للدمج
+
+تحويل ملف shape files إلى TopoJSON  لتحضيرها للدمج. لفعل ذلك نقوم على  Terminal  بتنصيب بعض الحزم المساعدة
+
+```{bash,eval=FALSE}
+sudo apt-get npm sudo npm install topojson@1.6.27 -g
+```
+
+
+تحويل الملفات
+
+
+```{bash,eval=FALSE}
+topojson -o SAU0.json -p -- SAU_adm1.shp
+```
+
+دمج الملفات بإستخدام رمز المنطقة
+```{bash,eval=FALSE}
+topojson -o SAU_adm1.json -e PopulationData.csv --id-property=Region_ID,ID_1 -p -- SAU0.json
+```
+
+الآن الملف جاهز لرفعه على الويب، إذا ما زبطت معاك الخطوات السابقة بإمكانك تحميل الملف من هنا
+
+### كتابة اكواد D3.js 
+
+من هنا نبدأ بكتابة اكواد الجافا سكريبت وإستخدام مكتبة d3 الرائعة
+خلينا في البداية نبدأ بوضع كل المتغيرات التي سوف نستخدمها لصنع نافذة  [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics)  عن طريق تحديد الطول والعرض. أيضا سنحدد نوع الإسقاط لخارطتنا وهو في هذه الحالة [إسقاط ميركاتور](https://ar.wikipedia.org/wiki/إسقاط_مركاتور). ايضا سنضع متغير بدون قيمة ليحوي معلومات الملف لاحقا.
+
+```{js, eval = FALSE}
+var height = 600;
+var width = 750;
+var projection = d3.geoMercator(); //defining the projection type function
+var saudi = void 0 ;
+
+```
+
+
+الجدير بالذكر، أنه عند إستخدام مكتبة d3، يمكنك تعيين متغيرات لتحوي التحديد ذاته [(CSS Selectors)](https://en.wikipedia.org/wiki/Cascading_Style_Sheets#Selector) حتى ولو كان عنصر الويب المحدد غير موجود في الصفحة في حال التحديد.
+الخطوة التالية هي صنع النافذة (سوف نطلق عليها لوحة الرسم) التي قمنا بتحديد امتداداتها.
+
+```{js, eval = FALSE}
+var svg = d3.select("#viz")
+.append("svg")
+.attr("width", width)
+.attr("height", height)
+.attr("id", "SVG");
+
+```
+
+سوف نقوم بكتابة دالة تترجم الإسقاطات إلى مسارات تتعرف عليها صفحات الويب. سوف نقوم بإستخدام تلك الدالة في حينها.
+
+```{js, eval = FALSE}
+var path = d3.geoPath(projection);
+// End of Parameters
+```
+
+ارجو أنك مستعد لأنه سنقوم بإستعراض بقية الأكواد بشكل اسرع. سوف نتجنب شرح الأجزاء الجمالية والغير محورية
+هنا نقوم بكتابة الدالة الرئيسية والتي  سوف تحوي مجمل الكود للتصوير البياني الذي نأمل به. هذه الدالة سوف تقوم بالتالي:
+
+1. تحميل الملف
+2. تحويلها إلى صيغة [GeoJSON](https://geojson.org/geojson-spec.html) عن طريق إستخدام مكتبة [Topojson.js](https://github.com/topojson/topojson/releases) 
+3. تحديد مقياس الرسم ووضع المركز في نقطة الأصل (في الوقت الحالي)
+4. حساب مقياس ومركز الخارطة المناسبان لحجم الخريطة
+5. جمع كل محتوى الخريطة في مجموعة سنطلق عليها map
+6. رسم كل محتوى الخريطة وإفاق دالتين خاصتين بعملية اللمس او المرور بالماوس والخروج بالماوس على مناطق المملكة
+7. حساب الكثافات السكانية تلوين المناطق وفقا لذلك
+8. رسم المقياس للكثافة السكانية للخريطة
+9. تلوين مقياس الخريطة
+
+```{js, eval = FALSE}
+//Main:
+//1) Importing files
+
+  //2) Converting Files
+  var states = topojson.feature(data,data.objects.sa);
+  //3) Setting up scale and origin
+  projection.scale(1).translate([0,0]);             
+  //4) Algorithm for Calculating the Scale and Placement ("Translation")
+  var b = path.bounds(states);
+  var s = 0.95/Math.max((b[1][0]-b[0][0])/width,(b[1][1] - b[0][1]) / height);
+  var t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s *(b[1][1] + b[0][1])) / 2];
+  // Re-positioning the Map based on the newly calculated scale and center
+  projection.scale(s).translate(t);
+
+  //5) Setting up our map   
+  var map = svg.append('g').attr('class', 'boundary');
+  saudi = map.selectAll('path').data(states.features);
+
+  //6) drawing the map
+   saudi = saudi.enter()
+      .append('path')
+      .attr('d', path)
+      .attr('id', geoID)
+      .on('mouseover', hover)
+      .on('mouseout',onout);
+
+  // Update
+  //7 calculating few important variables and color code the regions       
+  var popMax  = d3.max(states.features,function(d)
+                       {
+                        return (d.properties.Population/d.properties.Area);
+                       });
+  var  popMin = d3.min(states.features,function(d)
+                       {
+                        return (d.properties.Population/d.properties.Area);
+                       });
+  var popMedian = d3.median(states.features,function(d)
+                       {
+                        return (d.properties.Population/d.properties.Area);
+                       });
+
+   var ScaleColor = d3.scaleLinear().domain([popMin,popMedian,popMax]).range(["yellow","orange","red"]);
+
+  saudi.style('fill', function(d,i)
+      {
+          return ScaleColor((d.properties.Population/d.properties.Area))
+        }
+          );
+  saudi
+      .transition()
+      .duration(500)
+      .attr('fill', function(d)
+      {
+          return ScaleColor((d.properties.Population/d.properties.Area));
+      });
+           
+  //9 Other cosmatic stuff       
+  var svgDefs = svg.append('defs');
+  var mainGradient = svgDefs.append('linearGradient').attr('id', 'mainGradient');
+                  
+          mainGradient.append('stop')
+              .style('stop-color', ScaleColor(0))
+              .attr('offset', '0');
+          mainGradient.append('stop')
+              .style('stop-color', ScaleColor(popMax))
+              .attr('offset', '1');
+  // 10 drawing the scale
+          var gh = height/100;
+          var gw = width/5;
+          var gp = 3;
+          var ruler = svg.append("g").attr("id", "ruler");
+          ruler.attr("transform","translate(" + (width*0.75) + "," + (height*0.10)+")");
+          ruler.append('rect')
+              .style('fill', "url(#mainGradient)")
+              .attr('width', gw)
+              .attr('height', gh);
+             var xScale = d3.scaleLinear().domain([0,popMax]).range([0,(width/5)]);
+             var xAxis = d3.axisBottom(xScale)
+                          .tickValues([0,(popMax/4),(popMax/2),(3*popMax/4),popMax])
+                          .tickFormat(d3.format("f"));
+                           
+             ruler.attr("class", "axis").append("text").attr("y", -10).text("عدد السكان لكل كيلو متر مربع")
+             .attr("transform","translate("+gw*.5+",0)");
+            ruler.attr("class", "axis").call(xAxis);
+
+```
+
+
+
+في دالة المرور بالماوس سوف نقوم بالتالي
+
+1. تغير مستوى شفافية الألوان لكل لمنطقة ما عدا الممنطقة المفعلّة
+2. إستخراج جزء من البيانات وإعادة ترتيبه
+3. إدراج مجموعة من عناصر الويب للإضافة الرسم البياني الخاص بتصانيف السكان واجناسهم
+4. رسم الأعمدة البيانية وإضافة البيانات.
+
+
+```{js, eval = FALSE}
+
+var hover = function(data) {
+  //M 1
+      saudi.attr('fill-opacity', 0.2);// Another Updates
+      d3.select('#'+geoID(data)).attr('fill-opacity',1);
+      d3.select(".axis text").text(data.properties.Province_Name).attr('fill', 'black')
+     
+  //M 2     
+      var englishLables = ["All_Males",
+                  "All_Females",
+                  "Expat_Males",
+                  "Expat_Females",
+                  "Saudi_Males",
+                  "Saudi_Females"];
+      var arabicLabels =  ["الذكور",
+                  "الإناث",
+                  "الذكور الأجانب",
+                  "الإناث الأجانب",
+                  "الذكور السعوديين",
+                  "الإناث السعوديين"];
+                   
+                   
+      stat = englishLables.map(function (i){ return parseInt(data.properties[i]); });
+  //M 3               
+      svg.append("g").attr("id", "barChart").attr("transform","translate(" +width*.75+",98)");
+      xscale = d3.scaleLinear().domain([0,(stat[0]+stat[1])]).range([0,200]);
+       
+      var drwaring = d3.select('#barChart').selectAll("rect").data(stat);
+      var labels = d3.select('#barChart').selectAll("text").data(stat); 
+
+  //M 4   
+             drwaring = drwaring
+              .enter()
+              .append("rect")
+              .attr("height",15)
+              .attr("width", 0)
+              .attr("x", function(d){return 0})
+              .attr("y",function(d,i){ return ( i * 20)})
+              .style("fill", function(d,i){
+                  if(i%2 === 0){ return  "lightblue"}
+                                      else {return  "pink"}              
+              })
+              drwaring
+              .transition().duration(1000).ease(d3.easeQuad)
+              .attr("width",  function(d){ return xscale(d) })
+   
+   
+          var formatPercent = d3.format(",.2r");         
+               
+          labels
+              .enter()
+              .append("text")
+              .style("font-size", 10).style('color', 'black')
+              .attr("y",function(d,i){ return i*20+10}) 
+              .transition().duration(1000)
+              .attr("x", function(d){return xscale(d)+5})
+              .tween("text",function(d,a) {
+                      var i = d3.interpolate(0,d);
+                      var node= d3.select(this);
+                      return function(t) {
+                      node.text(formatPercent(i(t)/1000000) + " مليون" ) };})
+
+         labels
+              .enter()
+              .append("text")
+              .style("font-size", 10).style('color', 'black')
+              .attr("text-anchor", "end") 
+              .attr("x", -10)
+              .attr("y",function(d,i){ return i*20+10})
+              .text(function(d,i){return arabicLabels[i]})
+          };
+
+```
+
+في دالة خروج الماوس سوف نقوم بالتالي
+
+1. إعادة مستوى شفافية جميع المناطق إلى حالها السابق
+2. وإعادة إعدادات مقياس الخريطة
+3. و إزالة آعمدة الرسم البياني
+
+```{js, eval = FALSE}
+var onout = function(d){
+    //MO 1
+    saudi.attr('fill-opacity', 1);
+    //MO 2
+    d3.select(".axis text").text("عدد السكان لكل كيلو متر مربع");
+    //MO 3
+    d3.select('#barChart').remove();}
+   
+```
+
+
+
+
+```{r, echo=FALSE,message=FALSE,warning=FALSE}
+#install.packages("geojsonio")
+library("sf")
+library("geojsonio")
+library("readxl")
+library("magrittr")
+library("dplyr")
+library("jsonlite")
+library("here")
+
+```
+
+
+```{r, echo=FALSE,message=FALSE,warning=FALSE}
+filename <- here("static", "data", "data.xlsx")
+sa <-topojson_read(x = here("static", "data", "SAU_adm1.topojson"))
+saudi_data <-read_excel(path =filename,range = "A6:K18", col_names = c(
+  "adm_area", 
+  "occupied_units", 
+  "Saudi_Males",
+  "Saudi_Females",
+  "All_Saudis",
+  "Expat_Males",
+  "Expat_Females",
+  "All_Expats",
+  "All_Males",
+  "All_Females",
+  "Population")) %>%  arrange(match(adm_area,sa$NAME_1))
+```
+
+```{r, echo=FALSE,message=FALSE,warning=FALSE}
+
+for(col_name in colnames(saudi_data)){
+  if(col_name %in% colnames(sa)) {
+    sa[col_name] = saudi_data[col_name]
+  }else{
+    next
+  }
+}
+
+topo_sa <- topojson_json(sa,object_name = "sa")
+```
+
+```{r, results="asis",echo=FALSE,message=FALSE,warning=FALSE}
+  cat(
+    paste(
+    '<script>
+      var data = ',topo_sa,';
+    </script>'
+    , sep="")
+  ) 
+```
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script src="https://unpkg.com/topojson@3.0.2/dist/topojson.js"></script>
+<script src="https://d3js.org/d3-array.v1.min.js"></script>
+<script src="https://d3js.org/d3-geo.v1.min.js"></script>
+<script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-format.v1.min.js"></script>
+
+
+<div id = "viz"></div> 
+```{css,echo=FALSE,message=FALSE,warning=FALSE}
+
+.filled {
+    fill: url(#mainGradient);
+}
+.axis text {
+  color: black;
+  text-align: center;
+}
+
+```
+
+```{js, results = "asis",  echo=FALSE,message=FALSE,warning=FALSE}
+var height = 600;
+var width = 750;
+var projection = d3.geoMercator(); //defining the projection type function
+var saudi = void 0 ;
+var geoID = function(d){
+    return "c" + d.properties.ID_1;
+};
+
+var svg = d3.select("#viz")
+.append("svg")
+.attr("width", width)
+.attr("height", height)
+.attr("id", "SVG");
+
+var path = d3.geoPath(projection);
+// End of Parameters
+
+var hover = function(data) {
+  //M 1
+      saudi.attr('fill-opacity', 0.2);// Another Updates
+      d3.select('#'+geoID(data)).attr('fill-opacity',1);
+      d3.select(".axis text").text(data.properties.Province_Name).attr('fill', 'black')
+     
+  //M 2     
+      var englishLables = ["All_Males",
+                  "All_Females",
+                  "Expat_Males",
+                  "Expat_Females",
+                  "Saudi_Males",
+                  "Saudi_Females"];
+      var arabicLabels =  ["الذكور",
+                  "الإناث",
+                  "الذكور الأجانب",
+                  "الإناث الأجانب",
+                  "الذكور السعوديين",
+                  "الإناث السعوديين"];
+                   
+                   
+      stat = englishLables.map(function (i){ return parseInt(data.properties[i]); });
+  //M 3               
+      svg.append("g").attr("id", "barChart").attr("transform","translate(" +width*.75+",98)");
+      xscale = d3.scaleLinear().domain([0,(stat[0]+stat[1])]).range([0,200]);
+       
+      var drwaring = d3.select('#barChart').selectAll("rect").data(stat);
+      var labels = d3.select('#barChart').selectAll("text").data(stat); 
+
+  //M 4   
+             drwaring = drwaring
+              .enter()
+              .append("rect")
+              .attr("height",15)
+              .attr("width", 0)
+              .attr("x", function(d){return 0})
+              .attr("y",function(d,i){ return ( i * 20)})
+              .style("fill", function(d,i){
+                  if(i%2 === 0){ return  "lightblue"}
+                                      else {return  "pink"}              
+              })
+              drwaring
+              .transition().duration(1000).ease(d3.easeQuad)
+              .attr("width",  function(d){ return xscale(d) })
+   
+   
+          var formatPercent = d3.format(",.2r");         
+               
+          labels
+              .enter()
+              .append("text")
+              .style("font-size", 10).style('color', 'black')
+              .attr("y",function(d,i){ return i*20+10}) 
+              .transition().duration(1000)
+              .attr("x", function(d){return xscale(d)+60})
+              .tween("text",function(d,a) {
+                      var i = d3.interpolate(0,d);
+                      var node= d3.select(this);
+                      return function(t) {
+                      node.text(formatPercent(i(t)/1000000) + " مليون" ) };})
+
+         labels
+              .enter()
+              .append("text")
+              .style("font-size", 10).style('color', 'black')
+             // .attr("text-anchor", "end") 
+              .style("text-align","left")
+              .attr("x", -15)
+              .attr("y",function(d,i){ return i*20+10})
+              .text(function(d,i){return arabicLabels[i]})
+          };
+
+// Mouse out       
+var onout = function(d){
+    //MO 1
+    saudi.attr('fill-opacity', 1);
+    //MO 2
+    d3.select(".axis text").text("عدد السكان لكل كيلو متر مربع");
+    //MO 3
+    d3.select('#barChart').remove();}
+   
+
+//Main:
+//1) Importing files
+
+            //2) Converting Files
+            var states = topojson.feature(data,data.objects.sa);
+            //3) Setting up scale and origin
+            projection.scale(1).translate([0,0]);             
+            //4) Algorithm for Calculating the Scale and Placement ("Translation")
+            var b = path.bounds(states);
+            var s = 0.95/Math.max((b[1][0]-b[0][0])/width,(b[1][1] - b[0][1]) / height);
+            var t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s *(b[1][1] + b[0][1])) / 2];
+            // Re-positioning the Map based on the newly calculated scale and center
+            projection.scale(s).translate(t);
+ 
+            //5) Setting up our map   
+            var map = svg.append('g').attr('class', 'boundary');
+            saudi = map.selectAll('path').data(states.features);
+ 
+            //6) drawing the map
+             saudi = saudi.enter()
+                .append('path')
+                .attr('d', path)
+                .attr('id', geoID)
+                .on('mouseover', hover)
+                .on('mouseout',onout);
+
+            // Update
+            //7 calculating few important variables and color code the regions       
+            var popMax  = d3.max(states.features,function(d)
+                                 {
+                                  return (d.properties.Population/d.properties.Area);
+                                 });
+            var  popMin = d3.min(states.features,function(d)
+                                 {
+                                  return (d.properties.Population/d.properties.Area);
+                                 });
+            var popMedian = d3.median(states.features,function(d)
+                                 {
+                                  return (d.properties.Population/d.properties.Area);
+                                 });
+
+             var ScaleColor = d3.scaleLinear().domain([popMin,popMedian,popMax]).range(["#D3DDA0","#E18942","#650022"]);
+ 
+            saudi.style('fill', function(d,i)
+                {
+                    return ScaleColor((d.properties.Population/d.properties.Area))
+                  }
+                    );
+            saudi
+                .transition()
+                .duration(500)
+                .attr('fill', function(d)
+                {
+                    return ScaleColor((d.properties.Population/d.properties.Area));
+                });
+                     
+            //9 Other cosmatic stuff       
+            var svgDefs = svg.append('defs');
+            var mainGradient = svgDefs.append('linearGradient').attr('id', 'mainGradient');
+                            
+                    mainGradient.append('stop')
+                        .style('stop-color', ScaleColor(0))
+                        .attr('offset', '0');
+                    mainGradient.append('stop')
+                        .style('stop-color', ScaleColor(popMax))
+                        .attr('offset', '1');
+            // 10 drawing the scale
+                    var gh = height/100;
+                    var gw = width/5;
+                    var gp = 3;
+                    var ruler = svg.append("g").attr("id", "ruler");
+                    ruler.attr("transform","translate(" + (width*0.75) + "," + (height*0.10)+")");
+                    ruler.append('rect')
+                        .style('fill', "url(#mainGradient)")
+                        .attr('width', gw)
+                        .attr('height', gh);
+                       var xScale = d3.scaleLinear().domain([0,popMax]).range([0,(width/5)]);
+                       var xAxis = d3.axisBottom(xScale)
+                                    .tickValues([0,(popMax/4),(popMax/2),(3*popMax/4),popMax])
+                                    .tickFormat(d3.format(".0f"));
+                                     
+                       ruler.attr("class", "axis").append("text").attr("y", -10).text("عدد السكان لكل كيلو متر مربع")
+                       .attr("transform","translate("+gw*.5+",0)");
+                      ruler.attr("class", "axis").call(xAxis);
+
+
+```
+
+
+
+
+### تحديث لهذا المقال 
+هذا المقال تم كتابته ٢٠١٦ والبيانات الموجودة في ملف json قديمة. لذلك اسوف نقوم بتحديث البيانات عن طريق الآر . هذه الأكواد تكون بعد عملية تحويل الملفات إلى topojson 
+
+
+هنا نقرأ الملف ونحدد نوع الأعمدة تحضيرا للتحديث 
+
+```{r,eval=FALSE}
+filename <- "data.xlsx"
+download.file("https://www.stats.gov.sa/sites/default/files/twzy_lskn_fy_lmnzq_ldry.xlsx", destfile = filename)
+sa <-topojson_read(here("static", "data", "SAU_adm1.topojson"))
+saudi_data <-read_excel(path =filename,range = "A6:K18", col_names = c(
+  "adm_area", 
+  "occupied_units", 
+  "Saudi_Males",
+  "Saudi_Females",
+  "All_Saudis",
+  "Expat_Males",
+  "Expat_Females",
+  "All_Expats",
+  "All_Males",
+  "All_Females",
+  "Population")) %>%  arrange(match(adm_area,sa$NAME_1))
+
+```
+
+
+هنا نحدث البيانات كلها'
+```{r,eval=FALSE}
+
+for(col_name in colnames(saudi_data)){
+  if(col_name %in% colnames(sa)) {
+    sa[col_name] = saudi_data[col_name]
+  }else{
+    next
+  }
+}
+
+topo_sa <- topojson_json(sa,object_name = "sa")
+```
+
+هنا نجعل البيانات  متوفرة في بيئة جافا سكريبت 
+
+```{r,eval=FALSE}
+  cat(
+    paste(
+    '<script>
+      var data = ',topo_sa,';
+    </script>'
+    , sep="")
+  ) 
+```
+
+بذلك ننهي خطوة التحديث هنا. لا يوجد اي تحديثات اخرى لبقية المقال ما عدا التحديثات للأكواد.    
+
+
+
