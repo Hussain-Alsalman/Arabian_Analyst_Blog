@@ -318,21 +318,12 @@ var hover = function(data) {
 
 </style>
 <script type="text/javascript">
-var height = 600;
-var width = 750;
-var projection = d3.geoMercator(); //defining the projection type function
-var saudi = void 0 ;
+window.saudi = void(0) ;
+window.svg = void(0);
 var geoID = function(d){
     return "c" + d.properties.ID_1;
 };
 
-var svg = d3.select("#viz")
-.append("svg")
-.attr("width", width)
-.attr("height", height)
-.attr("id", "SVG");
-
-var path = d3.geoPath(projection);
 // End of Parameters
 
 var hover = function(data) {
@@ -386,10 +377,10 @@ var hover = function(data) {
           labels
               .enter()
               .append("text")
-              .style("font-size", 10).style('color', 'black')
+              .style("font-size", 10).style('color', 'black').attr("text-anchor", "end") 
               .attr("y",function(d,i){ return i*20+10}) 
               .transition().duration(1000)
-              .attr("x", function(d){return xscale(d)+60})
+              .attr("x", function(d){return xscale(d)+xscale(65)})
               .tween("text",function(d,a) {
                       var i = d3.interpolate(0,d);
                       var node= d3.select(this);
@@ -400,26 +391,36 @@ var hover = function(data) {
               .enter()
               .append("text")
               .style("font-size", 10).style('color', 'black')
-             // .attr("text-anchor", "end") 
-              .style("text-align","left")
-              .attr("x", -15)
+              
+              .style("text-align","right")
+              .attr("x", -1*(width*0.01))
               .attr("y",function(d,i){ return i*20+10})
               .text(function(d,i){return arabicLabels[i]})
           };
 
 // Mouse out       
-var onout = function(d){
-    //MO 1
-    saudi.attr('fill-opacity', 1);
-    //MO 2
-    d3.select(".axis text").text("عدد السكان لكل كيلو متر مربع");
-    //MO 3
-    d3.select('#barChart').remove();}
+      var onout = function(d){
+          //MO 1
+          saudi.attr('fill-opacity', 1);
+          //MO 2
+          d3.select(".axis text").text("عدد السكان لكل كيلو متر مربع");
+          //MO 3
+          d3.select('#barChart').remove();}
    
-
+var drawme = function(){
 //Main:
-//1) Importing files
-
+ 
+//1) Setting Parameters
+  var projection = d3.geoMercator(); //defining the projection type function
+  var path = d3.geoPath(projection);
+  window.width = document.getElementById("viz").clientWidth;
+  window.height =  width*0.8
+  svg = d3.select("#viz")
+              .append("svg")
+              .attr("width", width)
+              .attr("height", height)
+              .attr("id", "SVG");
+      
             //2) Converting Files
             var states = topojson.feature(data,data.objects.sa);
             //3) Setting up scale and origin
@@ -502,7 +503,14 @@ var onout = function(d){
                        .attr("transform","translate("+gw*.5+",0)");
                       ruler.attr("class", "axis").call(xAxis);
 
-
+}
+var resize = function(){
+  d3.select("#SVG").remove();
+  drawme();
+}
+drawme();
+window.onresize = resize;
+//Call our resize function if the window size is changed.
 </script>
 </div>
 <div id="تحديث-لهذا-المقال" class="section level3">
