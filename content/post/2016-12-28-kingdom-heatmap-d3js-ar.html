@@ -73,7 +73,7 @@ tags:
 <pre class="bash"><code>topojson -o SAU0.json -p -- SAU_adm1.shp</code></pre>
 <p>دمج الملفات بإستخدام رمز المنطقة</p>
 <pre class="bash"><code>topojson -o SAU_adm1.json -e PopulationData.csv --id-property=Region_ID,ID_1 -p -- SAU0.json</code></pre>
-<p>الآن الملف جاهز لرفعه على الويب، إذا ما زبطت معاك الخطوات السابقة بإمكانك تحميل الملف من هنا</p>
+<p>الآن الملف جاهز لرفعه على الويب، إذا ما زبطت معاك الخطوات السابقة بإمكانك تحميل الملف من <a href="https://raw.githubusercontent.com/Hussain-Alsalman/Arabian_Analyst_Blog/master/static/data/SAU_adm1.topojson">هنا</a></p>
 </div>
 <div id="كتابة-اكواد-d3.js" class="section level3">
 <h3>كتابة اكواد D3.js</h3>
@@ -109,8 +109,8 @@ var saudi = void 0 ;
 <li>تلوين مقياس الخريطة</li>
 </ol>
 <pre class="js"><code>//Main:
-//1) Importing files
-
+//1) Importing files 
+    // We no longer import the data here, refer to the last section of this post to know why. 
   //2) Converting Files
   var states = topojson.feature(data,data.objects.sa);
   //3) Setting up scale and origin

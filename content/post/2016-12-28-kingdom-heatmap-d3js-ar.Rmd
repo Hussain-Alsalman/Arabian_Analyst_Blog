@@ -82,7 +82,7 @@ topojson -o SAU0.json -p -- SAU_adm1.shp
 topojson -o SAU_adm1.json -e PopulationData.csv --id-property=Region_ID,ID_1 -p -- SAU0.json
 ```
 
-الآن الملف جاهز لرفعه على الويب، إذا ما زبطت معاك الخطوات السابقة بإمكانك تحميل الملف من هنا
+الآن الملف جاهز لرفعه على الويب، إذا ما زبطت معاك الخطوات السابقة بإمكانك تحميل الملف من [هنا](https://raw.githubusercontent.com/Hussain-Alsalman/Arabian_Analyst_Blog/master/static/data/SAU_adm1.topojson)
 
 ### كتابة اكواد D3.js 
 
@@ -132,8 +132,8 @@ var path = d3.geoPath(projection);
 
 ```{js, eval = FALSE}
 //Main:
-//1) Importing files
-
+//1) Importing files 
+    // We no longer import the data here, refer to the last section of this post to know why. 
   //2) Converting Files
   var states = topojson.feature(data,data.objects.sa);
   //3) Setting up scale and origin
@@ -649,7 +649,4 @@ topo_sa <- topojson_json(sa,object_name = "sa")
   ) 
 ```
 
-بذلك ننهي خطوة التحديث هنا. لا يوجد اي تحديثات اخرى لبقية المقال ما عدا التحديثات للأكواد.    
-
-
-
+بذلك ننهي خطوة التحديث هنا. لا يوجد اي تحديثات اخرى لبقية المقال ما عدا التحديثات للأكواد.  
