@@ -7,5 +7,26 @@
 <br>
 {{ .Content }}
 <br>
+{{ if .File.Path }}
+
+{{ $Rmd := (print .File.BaseFileName ".Rmd") }}
+
+{{ if (where (readDir (print "content/" .File.Dir)) "Name" $Rmd) }}
+
+  {{ $.Scratch.Set "FilePath" (print .File.Dir $Rmd) }}
+
+{{ else }}
+  
+  {{ $.Scratch.Set "FilePath" .File.Path }}
+
+{{ end }}
+
+{{ with .Site.Params.github_source }}
+<h4> جرب بنفسك </h4>
+<p> كامل الكود تجده <a href='{{ . }}{{ $.Scratch.Get "FilePath" }}'>هنا</a></p>
+{{ end }}
+
+{{ end }}
+
 {{ template "_internal/disqus.html" . }}
 {{ end }}

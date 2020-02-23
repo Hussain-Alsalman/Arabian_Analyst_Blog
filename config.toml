@@ -52,6 +52,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
   highlightingTheme = "atom-one-light"
   equationSize = 80
   profile_photo = "/images/personal_photo.jpg"
+  github_source = "https://github.com/Hussain-Alsalman/Arabian_Analyst_Blog/blob/master/content/"
 
  [params.social]
     [[params.social.contact]]
