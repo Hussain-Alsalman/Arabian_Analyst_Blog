@@ -17,10 +17,10 @@ tags:
 
 
 <p>احد اسرار عشقي للغة الـ R هو شعوري بأنه لا يوجد حد لما استطيع فعله بهذه اللغة الرائعة. اليوم سوف استعرض لكم احد تلك الإمكانيات الا وهي صنع تصويرات بيانية تفاعلية. نعم لقد قرأت تلك الجملة بشكل صحيح. R بإمكانه أن يكون تفاعلي. في الحقيقة هناك الكثير من الحزم التي تمكننا من فعل ذلك لكنني لن استعرضها كلها فذلك يستحق كتاب بذاته.</p>
-<div id="--htmlwidgets" class="section level3">
+<div id="حركة-الـ-htmlwidgets" class="section level3">
 <h3>حركة الـ HTMLWIDGETS</h3>
 <p>مؤخرا انتشرت حركة في وسط مجتمع مطوري حزم لغة R خصوصا المهتمين بالتصوير البياني. تلك الحركة تهدف إلى جلب قوة Java Script الرائعة في صنع مختلف الرسومات والتصويرات البيانية على صفحات الويب و ترويضها لتعمل بتناغم تام مع لغة R . تلك الحركة انجبت لنا ما يعرف الآن بـ <a href="https//www.htmlwidgets.com">HTMLWIDGETS</a></p>
-<div id="--" class="section level4">
+<div id="مثال-واردات-المملكة" class="section level4">
 <h4>مثال واردات المملكة</h4>
 <p>دعنا نحاول ان نمثل واردات المملكة على خريطة تفاعلية حيث يمكننا التصغير و التكبير وحتى سحب الخريطة نفسها. سنقوم بذلك عن طريق اتباع الخطوات التالية :</p>
 <ol style="list-style-type: decimal">
@@ -91,6 +91,6 @@ ds.c &lt;- ds.c[!is.na(ds.c[,1]),]</code></pre>
 <pre class="r"><code>mapp&lt;-leaflet() %&gt;% addTiles()  %&gt;% addPolylines(data =SpatialLines(list(Lines(lines.list, &quot;ID&quot;))))
 frameWidget(mapp, height = 350, width = &#39;95%&#39;)</code></pre>
 <div id="htmlwidget-1" style="width:95%;height:350px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1">{"x":{"url":"/post/interactive-map-saudi-imports_files/figure-html//widgets/widget_unnamed-chunk-10.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"url":"/post/interactive-map-saudi-imports_files/figure-html//widgets/widget_unnamed-chunk-11.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>

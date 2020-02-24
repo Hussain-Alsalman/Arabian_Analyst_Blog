@@ -11,18 +11,18 @@ draft: false
 
 
 
-<div class="section level2">
+<div id="التحفيز" class="section level2">
 <h2>التحفيز</h2>
 <p>من وقت إلى آخر اجد نفسي أتصفح كتاب <a href="https://web.stanford.edu/~hastie/ElemStatLearn/printings/ESLII_print12.pdf">Elements of Statistical Learning</a>. الكتاب يحوي على الكثير من الإضاحات والرسومات البيانية لكن لفت انتباهي الرسومات الموجودة حول موضوع موازنة الإنحياز والتباين. هذا الموضوع مهم جدا والكثير يخفى عليه عواقب إهماله. لذلك قررت أن ادون حول الموضوع وأبعث الحياة لتلك الرسومات البيانية.</p>
 </div>
-<div id="----" class="section level2">
+<div id="نبذة-عن-نظرية-التعلم-الإحصائي" class="section level2">
 <h2>نبذة عن نظرية التعلم الإحصائي</h2>
 <p><a href="https://en.wikipedia.org/wiki/Statistical_learning_theory">نظرية التعلم الإحصائي</a> هي أحد ابعاد المنهج العلمي الذي أسسه <a href="https://ar.wikipedia.org/wiki/ابن_الهيثم">إبن الهيثم</a>. النظرية توفر نطاق عمل لتطوير نماذج تنبؤية يمكن تقديرها من خلال البيانات المجمعة. بشكل مبسط, النظرية تنص على وجود دالة حقيقية تفسر علاقة متغير معين بمتغير آخر أو عدة متغيرات. هذه الدالة دائما ما تكون مجهولة. لذلك يقوم الباحثين بجمع البيانات لتقدير تلك الدالة. هذه الدوال الحقيقة ليست سهلة في التقدير لأنها تضم عوامل أو حدود لامتناهية. لحسن الحظ, كثير من تلك الحدود بإمكاننا تجاهلها لضئل تأثيرها على المخرجات النهائية. في الحقيقة علماء الإحصاء يصفون تلك الحدود بالضجيج وتمثل بحد واحد يسمى الحد العشوائي. يمكننا تمثيل ما ذكرناه رياضيا كالتالي</p>
 <p><span class="math display">\[
 Y = f(x) + \epsilon 
 \]</span></p>
 </div>
-<div id="-" class="section level2">
+<div id="صعوبات-التقدير" class="section level2">
 <h2>صعوبات التقدير</h2>
 <p>طرق تقدير الدالة الحقيقة كثيرة و متعددة لن نفصل فيها هنا لكن كلها تتشارك في خطة سير العمل.</p>
 <ol style="list-style-type: decimal">
@@ -34,59 +34,59 @@ Y = f(x) + \epsilon
 </ol>
 <p>بالنظر إلى هذه الخطوات, قد يتبادر إليك أن عملية التقدير سهلة. لكن الحقيقة هي ان في كل خطوة هناك موارد كثيرة للخطأ. ففي خطوة جمع البيانات مثلا يشترط على الباحث أن يقوم بجمع بيانات خالية من <a href="https://en.wikipedia.org/wiki/Bias#Statistical_biases">انحيازات كثيرة</a> حتى تمثل العينة بشكل صحيح ارض الواقع. كذلك الأمر نفسه ينطبق على خطوة قسمة البيانات. لكن الصعوبة الحقيقة والخطأ الذي يقع فيه الكثير من الباحثين هو تحديد عدد ونوع المدخلات للنموذج. لأن زيادة عدد المدخلات يؤدي إلى فرص التخصيص(التباين) وقلتها يؤدي إلى فرط التعميم (الانحياز).</p>
 </div>
-<div id="--" class="section level2">
+<div id="موازنة-الانحياز-والتباين" class="section level2">
 <h2>موازنة الانحياز والتباين</h2>
 <p>جهلنا بعدد حدود الدالة الحقيقية يضعنا في مأزق. فنحن لا نعرف كم حد للدالة وأي منها له تأثير كبير وأي منها مجرد ضجيج. أحد الحيل التي ابتكرها الإحصائيون هو قسمة البيانات إلى مجموعتي تدريب واختبار لتقييم جودة التقدير. الهدف هنا أن نستنتج نموذج يقلل مقدار الخطأ في كلتا المجموعتين. حتى نشهد مدى فاعلية هذه الحيلة سوف أقوم بصنع عدة محاكاة تجسد اداء النموذج في كلتا المجموعتين مع زيادة عدد الحدود تدريجيا.</p>
-<div id="--" class="section level3">
+<div id="محاكاة-تقدير-النموذج" class="section level3">
 <h3>محاكاة تقدير النموذج</h3>
-<div id="-" class="section level5">
+<div id="الدالة-الحقيقة" class="section level5">
 <h5>الدالة الحقيقة</h5>
 <p>لنفترض ان الدالة الحقيقة هي كالتالي</p>
 <p><span class="math display">\[
 f(x) = 2\sin(x) +0.2x 
 \]</span></p>
 <p>وهذه شكل الدالة</p>
-<p><img src="/post/2020-02-15-bias-vs-variance_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p><img src="/post/2020-02-15-bias-vs-variance_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
 <p>هذه الدالة تفسر ارتباط المتغير <span class="math inline">\(y\)</span> بالمتغير <span class="math inline">\(x\)</span> . تذكر نحن نجهل هذه الدالة ومهمتنا تقديرها</p>
 </div>
-<div id="--" class="section level4">
+<div id="مجموعة-التدريب-والإختبار" class="section level4">
 <h4>مجموعة التدريب والإختبار</h4>
 <p>لنفرض أننا قمنا بجمع البيانات حول <span class="math inline">\(y\)</span> و <span class="math inline">\(x\)</span> ثم قسمناها إلى مجموعتين وقمنا بتصويرها كالتالي</p>
 <p><img src="/post/2020-02-15-bias-vs-variance_files/figure-html/Collected_data-1.png" width="672" />
 لاحظ أن البيانات لا تنطبق على خط الدالة الحقيقة لأنها تحتوي على ضجيج عشوائي</p>
 </div>
-<div id="---" class="section level4">
+<div id="تحديد-عدد-الحدود-للنموذج" class="section level4">
 <h4>تحديد عدد الحدود للنموذج</h4>
 <p>الآن دعنا نبدأ بتصوير الدالة المقدرة مع زيادة عدد الحدود فيها بحد واحد وسوف نزيد عدد الحدود في كل مرة.</p>
 <pre class="r"><code>#full code to create &quot;g_animated&quot; is avialable on my github 
 #https://github.com/Hussain-Alsalman/Arabian_Analyst_Blog/blob/master/content/post/2020-02-15-bias-vs-variance.Rmd
 animate(g_animated,fps = 5)</code></pre>
-<p><img src="/post/2020-02-15-bias-vs-variance_files/figure-html/unnamed-chunk-2-1.gif" /><!-- --></p>
+<p><img src="/post/2020-02-15-bias-vs-variance_files/figure-html/unnamed-chunk-3-1.gif" /><!-- --></p>
 <p>لاحظ تغير شكل الدالة المقدرة باللون الأزرق مع زيادة عدد الحدود. تبدأ المحاكاة بحد واحد فقط وهذا خط مستقيم وهو غير كافي لتقدير الدالة الحقيقة (فرط التعميم). في حين أن النموذج التقديري يظهر تحسن كبير عندما نصل إلى ثمان حدود. لكن مع زيادة العوامل يبدأ النموذج بالتعرج ومحاولة استيعاب الضجيج (فرط التخصيص).</p>
-<div id="----" class="section level5">
+<div id="الأداء-في-مجموعة-التدريب-والأختبار" class="section level5">
 <h5>الأداء في مجموعة التدريب والأختبار</h5>
 <p>دعنا الآن نستطلع أثر زيادة عدد الحدود في النموذج على متوسط الخطأ لكل من المجموعتين (التدريب والاختبار). حتى نتمكن من ذلك, سنقوم بمحاكاة بناء النموذج ألف مرة لكل حد وحساب متوسط الخطأ.</p>
 <pre class="r"><code>#full code to create &quot;te_tr_g&quot; object is avialable on my github 
 #https://github.com/Hussain-Alsalman/Arabian_Analyst_Blog/blob/master/content/post/2020-02-15-bias-vs-variance.Rmd
 animate(te_tr_g,fps = 8)</code></pre>
-<p><img src="/post/2020-02-15-bias-vs-variance_files/figure-html/unnamed-chunk-4-1.gif" /><!-- --></p>
+<p><img src="/post/2020-02-15-bias-vs-variance_files/figure-html/unnamed-chunk-5-1.gif" /><!-- --></p>
 <pre class="r"><code>#full code to create &quot;anim&quot; object is avialable on my github 
 #https://github.com/Hussain-Alsalman/Arabian_Analyst_Blog/blob/master/content/post/2020-02-15-bias-vs-variance.Rmd
 animate(anim,fps = 8)</code></pre>
-<p><img src="/post/2020-02-15-bias-vs-variance_files/figure-html/unnamed-chunk-6-1.gif" /><!-- --></p>
+<p><img src="/post/2020-02-15-bias-vs-variance_files/figure-html/unnamed-chunk-7-1.gif" /><!-- --></p>
 <p>لاحظ أننا بدأنا بمتوسط خطأ كبير لكلتا المجموعتين وذلك بسبب فرط التعميم أي ان النموذج بسيط جدا وليس كافي لتقدير الدالة الحقيقية. لكن مع زيادة عدد الحدود بين ٦ و ٨ تمكنا من تقليص متوسط الخطأ في كلتا المجموعتين.</p>
 <p>لاحظ أن متوسط الخطأ يستمر في الهبوط في مجموعة التدريب بينما يبدأ بالإرتفاع في مجموعة الأختبار وذلك بسبب فرط التخصيص أي ان النموذج لا يمكن استخدامه بشكل عام بل هو خاص بمجموعة التدريب.</p>
 </div>
 </div>
 </div>
 </div>
-<div class="section level2">
+<div id="الخلاصة" class="section level2">
 <h2>الخلاصة</h2>
 <p>موازنة الانحياز والتباين هو شَرَكًا نصبته الطبيعة لتحدي علماء البيانات ولقد وقع فيه الكثير. لذلك يجدر بعالم البيانات أن يتخذ الخطوات الازمة لتفادي الوقوع في فرط التخصيص والتعميم للنماذج التي يقوم بتطويرها. هناك طرق كثيرة لم يسعنا التطرق إليها لتجنب هذا الخطأ منها
 - التحقق المتقاطع (Cross Validation)
 - جمع بيانات اكبر
 - استخدام طريقة الضبط (regularization)</p>
-<div class="section level4">
+<div id="شكر" class="section level4">
 <h4>شكر</h4>
 <ol style="list-style-type: decimal">
 <li><a href="https://www.nmthgiat.com/translators-and-methodology/">فريق عمل</a> نمذجيات لترجمة <a href="https://www.nmthgiat.com/terminology/">المصطلحات</a></li>

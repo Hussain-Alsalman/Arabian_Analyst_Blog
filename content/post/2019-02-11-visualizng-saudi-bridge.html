@@ -10,17 +10,20 @@ draft: false
 
 
 
-<div class="section level2">
+<div id="مقدمة" class="section level2">
 <h2>مقدمة</h2>
-<p>احد قراءتي حول البيانات الجغرافية وجدت نفسي امام حزمة Rayshader الرائعة. هذه الحزمة لها امكانيات مبهرة منها - اضافة texture للخريطة مثل الصحراء او الخضرة لتبدو الخريطة اقرب للحقيقة - تقوم الحزمة بتعيين المياه بشكل تلقائي مما يساعد على صنع محاكاة لإرتفاع مستوى المياه او جفافها - الحزمة تقوم كذلك بتتبع مسار الضوء. هذه العملية تسمى بالـ <a href="https://en.wikipedia.org/wiki/Ray_tracing_(graphics)">Ray Tracing</a> وهي تستخدم بشكل واسع في صناعة الصور ثلاثية الابعاد بشكل متناهي في الدق وقريب من الحقيقة.</p>
+<p>احد قراءتي حول البيانات الجغرافية وجدت نفسي امام حزمة Rayshader الرائعة. هذه الحزمة لها امكانيات مبهرة منها
+- اضافة texture للخريطة مثل الصحراء او الخضرة لتبدو الخريطة اقرب للحقيقة
+- تقوم الحزمة بتعيين المياه بشكل تلقائي مما يساعد على صنع محاكاة لإرتفاع مستوى المياه او جفافها
+- الحزمة تقوم كذلك بتتبع مسار الضوء. هذه العملية تسمى بالـ <a href="https://en.wikipedia.org/wiki/Ray_tracing_(graphics)">Ray Tracing</a> وهي تستخدم بشكل واسع في صناعة الصور ثلاثية الابعاد بشكل متناهي في الدق وقريب من الحقيقة.</p>
 <p>بالإضافة إلى العديد من الإمكانيات التي لن يسعنا الوقت للتحدث عنها جميعها. ولعل الصورة هي أكبر برهان.</p>
 <div class="figure">
 <img src="https://raw.githubusercontent.com/tylermorganwall/rayshader/master/man/figures/README_three-d-water-1.png" alt="هذا مثال لمخرجات الحزمة النهائية" />
 <p class="caption">هذا مثال لمخرجات الحزمة النهائية</p>
 </div>
 </div>
-<div id="--" class="section level2">
-<h2>من أين نبدأ؟</h2>
+<div id="من-أين-نبدأ" class="section level2">
+<h2>من أين نبدأ</h2>
 <p>في هذا المقال سوف اقوم بصنع خريطة ثلاثية الابعاد لمنطقة جسر الملك فهد. حتى نتمكن من صنع خريطة ثلاثية الابعاد لابد ان نحصل على خريطة للمنطقة تحتوي على بيانات ارتفاع سطح الارض عن المستوى او ما تسمى بالـ elevation map . يمكن الحصول على مثل تلك الخرائط مجانا من خلال موقع الولايات المتحدة للمسح الجغرافي <a href="https://topotools.cr.usgs.gov/gmted_viewer/viewer.htm">USGS</a> و الحصول على خارطة بصيغة tif</p>
 <p>الخطوة التالي هي ان نقوم بإقتصاص فقط منطقة الجسر ويمكننا ان نقوم بذلك عن طريق تحديد مستطيل يحوي قيم خطوط العرض والطول..</p>
 <p>سوف نحتاج إلى هذه الحزم في هذا المقال :</p>
@@ -29,7 +32,7 @@ library(&quot;tidyverse&quot;)
 library(&quot;rgdal&quot;)
 library(&quot;here&quot;)</code></pre>
 </div>
-<div id="--" class="section level2">
+<div id="الخطوات-و-الأكواد" class="section level2">
 <h2>الخطوات و الأكواد</h2>
 <p>هنا نقتص الخريطة لنحدد فقط منطقة الجسر. ونقوم بحفظ الخريطة في ملف منفصل.</p>
 <pre class="r"><code>#Loading the larger map
@@ -49,10 +52,7 @@ raster_filepath = here::here(&quot;static&quot;, &quot;data&quot;, &quot;Estren_
 estren_region_map &lt;- raster::raster(raster_filepath)</code></pre>
 <p>بعد الحصول على الخريطة التي تحوي على ارتفاعات وتضاريس المنطقة الجغرافية. يمكننا عرض تلك الخريطة بشكل ثلاثي الابعاد عن طريق استخدام حزمة raster لكن النتائج ليست بالمستوى المطلوب من الدقة والجمال.</p>
 <pre class="r"><code>persp(estren_region_map,exp=0.2,phi=35,shade = 0.45,xlab = &quot;خط الطول&quot; , ylab = &quot;خط العرض&quot;, zlab = &quot;الارتفاع&quot;, col = &quot;gold&quot;,lwd = 0.08)</code></pre>
-<div class="figure">
-<img src="/post/2019-02-11-visualizng-saudi-bridge_files/3d_estren_regsion.png" />
-
-</div>
+<p><img src="/post/2019-02-11-visualizng-saudi-bridge_files/3d_estren_regsion.png" /></p>
 <p>نقوم بتحويل تلك الطبقة إلى مصفوفة ليمكن معالجتها عن طريق حزمة rayshader لاحقا</p>
 <pre class="r"><code>#And convert it to a matrix:
 elmat = matrix(raster::extract(estren_region_map,raster::extent(estren_region_map),buffer=1000),
@@ -65,7 +65,7 @@ elmat %&gt;%
   add_shadow(ray_shade(elmat)) %&gt;%
   add_shadow(ambient_shade(elmat)) %&gt;%
   plot_map()</code></pre>
-<p><img src="/post/2019-02-11-visualizng-saudi-bridge_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="/post/2019-02-11-visualizng-saudi-bridge_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 <p>كما ترى الخريطة شكلها افضل بالمقارنة بحزمة raster .</p>
 <p>الخطو التالية هي ان نضع ملامح الخريطة الحقيقية بالإستعانة بكود طوره <a href="https://github.com/wcmbishop/rayshader-demo/tree/master/R">Will Bishop</a> . في هذه الخطوة سنقوم بتحميل صورة من خرائط <a href="https://www.openstreetmap.org/#map=7/26.131/50.521">OpenStreetMap</a> والتي تحوي على الحدود الدولية والشوارع وبعض العلامات للمدن .</p>
 <pre class="r"><code># define bounding box with longitude/latitude coordinates
@@ -91,7 +91,7 @@ overlay_img &lt;- png::readPNG(overlay_file)</code></pre>
   add_shadow(ray_shade(elmat)) %&gt;%
   add_overlay(overlay_img, alphalayer = 0.7) %&gt;%
   plot_map()</code></pre>
-<p><img src="/post/2019-02-11-visualizng-saudi-bridge_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p><img src="/post/2019-02-11-visualizng-saudi-bridge_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 <p>يمكننا التلاعب بالزاوية التي ننظر من خلالها إلى الخريطة لتبدو بشكل ثلاثي الابعاد من خلال الكود التالي</p>
 <pre class="r"><code>zscale &lt;- 10
 rgl::clear3d()
@@ -104,7 +104,8 @@ elmat %&gt;%
           water = TRUE, soliddepth = -max(elmat)/zscale, wateralpha = 0,
           theta = 25, phi = 30, zoom = 0.65, fov = 60)
 render_snapshot()</code></pre>
-<p><img src="/post/2019-02-11-visualizng-saudi-bridge_files/figure-html/unnamed-chunk-10-1.png" width="672" /> للأسف المنطقة التي اخترناها لا يوجد بها تضاريس جغرافية ذات ارتفاعات كبيرة. لذلك الصورة تبدو وكأنها مسطحة.</p>
+<p><img src="/post/2019-02-11-visualizng-saudi-bridge_files/figure-html/unnamed-chunk-11-1.png" width="672" />
+للأسف المنطقة التي اخترناها لا يوجد بها تضاريس جغرافية ذات ارتفاعات كبيرة. لذلك الصورة تبدو وكأنها مسطحة.</p>
 <p>كذلك يمكننا صنع صورة gif لنحاكي اختلاف مستوى المياه في الخريطة.. اود التنبيه أن الكود ادناه يأخذ بعض الوقت فأنصح ان تقوم بإحتساء كوب من القهوة حتى ينتهي الكود من العمل.</p>
 <pre class="r"><code>elev_matrix &lt;- elmat
 n_frames &lt;- 180
@@ -140,12 +141,9 @@ for (i in seq_len(n_frames)) {
 magick::image_write_gif(magick::image_read(img_frames), 
                         path = here::here(&quot;static&quot;,&quot;images&quot;, &quot;estren_region.gif&quot;), 
                         delay = 6/n_frames)</code></pre>
-<div class="figure">
-<img src="/post/2019-02-11-visualizng-saudi-bridge_files/estren_region.gif" />
-
+<p><img src="/post/2019-02-11-visualizng-saudi-bridge_files/estren_region.gif" /></p>
 </div>
-</div>
-<div class="section level2">
+<div id="الخلاصة" class="section level2">
 <h2>الخلاصة</h2>
 <p>لعل هذه الحزمة تبدو وكأنها حزمة للمرح والتسلية (toy package) لكن في الحقيقة يمكن استخدام هذه الحزمة في تطبيقات عملية عديدة. احد الأمثلة على تلك التطبيقات هي حساب متوسط الوقت الذي يتسلط عليه ضوء الشمس لمنطقة معينة عن طريق محاكاة مسار الشمس بالنسبة لتلك المنطقة خلال السنة. ذلك سيمكننا من تحديد ما إذا كانت تلك المنطقة مناسبة لوضع الخلايا الشمسية المولدة للطاقة. كذلك يمكن محاكاة حدوث ظاهرة الفيضانات وتحديد اي المناطق اكثر عرضه للخطر.</p>
 </div>

@@ -136,6 +136,10 @@ library("osmdata")
 # هنا نقوم ببناء الإستعلام الذي سوف نرسله لسيرفرات OpenStreetMap 
 q <- getbb("Hofuf") %>% opq() %>%  add_osm_feature("place", "village")
 
+#fixing the api end point to point to the right one 
+new_url <- "https://z.overpass-api.de/api/interpreter"
+set_overpass_url(new_url)
+get_overpass_url()
 # نتحصل على المعلومة من هنا
 Hofuf_villages <- osmdata_sf(q)
 ```
