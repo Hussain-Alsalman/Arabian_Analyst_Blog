@@ -8,7 +8,16 @@ tags:
   - جيوغرافي
   - تفاعلي
 ---
+```{r,include=FALSE,echo=FALSE,eval=FALSE,message=FALSE,warning=FALSE}
+# RUN THIS CODE to ensure the article is reproducible
+if("checkpoint" %in% installed.packages()['Package']){
+  install.packages("checkpoint")
+}else{
+  cat("checkpoint exists - ready to create reproducible envirnoment")}
 
+library("checkpoint")
+checkpoint("2020-02-21")
+```
 ### مقدمة 
 في هذا المقال سنتحدث عن جانب مهم من جوانب تحليل البيانات وهو[ تصوير البيانات (Data Visualization)](https://ar.wikipedia.org/wiki/تصوير_بيانات). وكالعادة سوف نتجنب السطحية في الطرح لذلك راح نركز على قسم محدد من تصوير البيانات كي نتمكن مع إرفاق مثال تطبيقي للموضوع. مقالنا سوف يستعرض “تصوير البيانات الجغرافية المكانية” او ما يعرف بالـ [(Geovisualization)](https://en.wikipedia.org/wiki/Geovisualization). هذا النطاق من تصوير البيانات ازدادت شعبيته بشكل كبير في الآونة الأخيرة. حيث بدأت الكثير من الشركات والمؤسسات والحكومات تعتمده في صنع القرار. يا ترى لماذا؟
 

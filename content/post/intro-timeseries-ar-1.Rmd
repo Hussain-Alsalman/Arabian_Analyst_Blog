@@ -11,6 +11,16 @@ tags:
 - نظري
 ---
 
+```{r,include=FALSE,echo=FALSE,eval=FALSE,message=FALSE,warning=FALSE}
+# RUN THIS CODE to ensure the article is reproducible
+if("checkpoint" %in% installed.packages()['Package']){
+  install.packages("checkpoint")
+}else{
+  cat("checkpoint exists - ready to create reproducible envirnoment")}
+
+library("checkpoint")
+checkpoint("2017-12-18")
+```
 
 #### مقدمة
 
