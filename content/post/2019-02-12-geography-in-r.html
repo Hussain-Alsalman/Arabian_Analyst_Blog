@@ -27,9 +27,9 @@ tags:
 <div id="عالم-الفيكتور-وعالم-الراستر" class="section level2">
 <h2>عالم <code>الفيكتور</code> وعالم <code>الراستر</code></h2>
 <p>هناك طريقتين لتمثيل البيانات الجغرافية .طريقة الـ vector و طريقة الـ raster. بالنسبة إلى الـ vectors فهذه الطريقة ترى العالم كنقاط واشكال هندسية لها حدود وأماكن معروفة على وجه الارض . عادة ما يكون حجم الملفات التي تحتفظ بمعلومات العالم “الفيكتوري” ضئيل لا يكاد يذكر.</p>
-<p>&lt;img class=“rounded mx-auto d-block” src=“/post/2019-02-12-geography-in-r_files/image001.gif” alt=&quot;“, align =”center&quot;/&gt;</p>
+<p><img src="/images/image001.gif" class="rounded mx-auto d-block" align="center" /></p>
 <p>اما بالنسبة إلى الـ raster فهذه الطريقة ترى العالم كالبلاط المتطابق في الحجم وكل بلاطة تحوي في جعبتها خلايا تحتفظ فيها كل خلية بمعلومات جغرافية. لعلك لاحظت عند تصفحك Google Maps ان هناك بعض المربعات يقوم المتصفح بتحميلها لعرض صور الاقمار الصناعية.</p>
-<p>&lt;img class=“rounded mx-auto d-block” src=“/post/2019-02-12-geography-in-r_files/layers.gif” alt=&quot;“, align =”center&quot;/&gt;</p>
+<p><img src="/images/layers.gif" class="rounded mx-auto d-block" align="center" /></p>
 <p>طبعا لكل طريقة مزايا فطريقة الفيكتور تستخدم بشكل واسع في مجالات علوم الاجتماعيات لرصد الحدود السياسية الدولية او لتحديد الاماكن ذات الاهمية . اما طريقة الراستر فتستخدم بشكل مكثف في العلوم البيئية والطبيعية لرصد التضاريس الجغرافية غالبا ما يكون معتمدا على تقنية التحسس عن بعد بالأقمار الإصطناعية remote sensing technologies.</p>
 </div>
 <div id="مصطلحات-جغرافية-مستخدمة-في-r" class="section level2">
@@ -42,7 +42,7 @@ tags:
 <li><p><strong>Projected</strong> وهو نظام يحاول بسط الكرة الأرضية (الثلاثية الابعاد) إلى نظام ديكارتي مسطح ثنائي الأبعاد يعتمد على قيمتي x و y. هذه العملية غير ممكنة بدون تحريف القيم الجغرافية قليلاً مما ينتج عنه بعض التشوهات. على سبيل المثال, في منظور ميركيتور Mercator Projection يظهر لنا ان جرينلاند greenland (والتي لا تتجاز مساحتها اكثر من مليونين كيلومتر مربع) مساوية لمساحة القارة الافريقية بأكملها والتي تزيد مساحتها عن ثلاثين مليون كيلومتر مربع.</p></li>
 </ul></li>
 </ul>
-<p>&lt;img class=“rounded mx-auto d-block” src=“/post/2019-02-12-geography-in-r_files/greenland-distortion.png” alt=&quot;“, align =”center&quot;/&gt;</p>
+<p><img src="/images/greenland-distortion.png" class="rounded mx-auto d-block" align="center" /></p>
 <ul>
 <li><strong>Units</strong> : وهي وحدة القياس المستخدمة. أختلاف مصادر البيانات الجغرافية يحتم علينا معرفة وحدة القياس. فكما تعلم, هناك من يستخدم الأقدام والأميال وهناك من يستخدم الأمتار والكيلو مترات.</li>
 </ul>
