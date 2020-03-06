@@ -67,6 +67,7 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 library("sf") 
 library("spData") # لتحميل خريطة العالم 
 library("dplyr") # للتعامل مع البيانات
+library("osmdata") # لتحميل خرائط openStreetMaps
 ```
 
 البيانات في حزمة sf تكون بصيغة data frames مما يجعل التعامل معها أبسط وأسهل. 
@@ -99,8 +100,6 @@ Asia<- world %>% filter(continent == "Asia") %>% st_union()
 ksa <- world %>% filter(name_long == "Saudi Arabia") 
 plot(st_geometry(Asia))
 plot(st_geometry(ksa), lwd = 3, col = "gray", add = TRUE)
-
-
 ```
 
 في الكود اعلاه قمنا بدمج الدول الآسيوية على مستوى القارة لتبدو كقطعة واحدة. كذلك قمنا بفرز خريطة المملكة العربية السعودية وتلوينها باللون الرمادي. 
@@ -110,17 +109,17 @@ plot(st_geometry(ksa), lwd = 3, col = "gray", add = TRUE)
 
 يبة المجانية للمعلومات الجغرافية هي [OpenStreetMap](https://www.openstreetmap.org). الجميل في الأمر انه بالإمكان الاستفادة من هذه القاعدة البياناتية الضخمة والتعامل مع بياناتها بكل يسر بإستخدام حزمة sf. يمكن زيارة الموقع وتحميل البيانات مجانا. 
 
+```{r, message=FALSE, warning=FALSE}
 
-```{r}
-library("here")
-Alhasa_file_path <- here("static", "data", "map")
-Alhasa_str <- st_read(Alhasa_file_path, layer ="lines") # تمثيل شوارع  الأحساء
-plot(st_geometry(Alhasa_str), main = "Alhasa Streets") 
+# هنا نقوم ببناء الإستعلام الذي سوف نرسله لسيرفرات OpenStreetMap
+Alhasa_str <- opq( c(48.02736 ,25.1431, 49.9356 , 25.6886)) %>% add_osm_feature(key = 'highway', value = available_tags('highway')) %>% osmdata_sf()
+plot(st_geometry(Alhasa_str$osm_lines ), main = "Alhasa Streets") 
 plot(st_geometry(ksa), lwd = 3, alph = .3,col = rgb(173,216,230, max = 255 ,alpha = 100), add = TRUE)
 ```
+
 ```{r}
 library("leaflet")
-leaflet(Alhasa_str) %>% 
+leaflet(Alhasa_str$osm_lines) %>% 
   addPolylines() %>% setView(49.606208,25.403518, zoom = 14)
 
 ```
@@ -133,7 +132,7 @@ leaflet(Alhasa_str) %>%
 
 
 ```{r}
-library("osmdata")
+
 # هنا نقوم ببناء الإستعلام الذي سوف نرسله لسيرفرات OpenStreetMap 
 q <- getbb("Hofuf") %>% opq() %>%  add_osm_feature("place", "village")
 
