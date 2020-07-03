@@ -1,0 +1,298 @@
+---
+title: الرسم بالرياضيات - منحنيات بيزييه
+author: Hussain
+date: '2020-06-28'
+slug: bezier-curves
+categories: []
+tags:
+  - نظري
+  - متقدم
+---
+
+```{r,include=FALSE,echo=FALSE,eval=FALSE,message=FALSE,warning=FALSE}
+# RUN THIS CODE to ensure the article is reproducible
+if("checkpoint" %in% installed.packages()['Package']){
+  install.packages("checkpoint")
+}else{
+  cat("checkpoint exists - ready to create reproducible envirnoment")}
+
+library("checkpoint")
+checkpoint("2020-06-28")
+```
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+## مقدمة : 
+هل تساءلت يوما عن كيفية تمثيل البيانات؟ لا اعني بذلك عن ربط الأرقام بالرسومات البيانية واللوحات التفاعلية لكن أعني العمق الرياضي من تلك العملية. كيف يقوم الحاسب برسم أي منحنى على الشاشة وكيف يمكننا تمثيل ذلك رياضيا. في هذه التدوينة سوف اعرفك على منحنيات بييزييه الرائعة بشكل مختصر. لكن قبل أن نبدأ اود أن اعترف لك أنني لم أكن ملم بهذه المنحنيات ولم تجمعني مسيرتي الأكاديمية بها ابداً ولعل ذلك جعلني ارى هذه المنحنيات لجمالها وليس لاداء الفروض الجامعية. ما يعجبني في هذه المنحنيات هو بساطة الفكرة التي تقوم عليها معادلاتها الرياضية.  فمن خلال معادلة رياضية انيقة نستطيع أن نرسم  أي شيء نريده. أليس ذلك رائع؟
+
+في هذه التدوينة سوف اتطرق لثلاث محاور:   
+
+1. التفسير الهندسي منحنيات بيزييه.
+2. التفسير الرياضي لمنحنيات بيزييه.
+3. صلة منحنيات بيزييه بعلم البيانات .
+
+## بيزييه في كل مكان
+
+منحنيات بيزييه موجودة في كل مكان امامك في الشاشة. بدء بأشكال الخطوط المتنوعة التي نستخدمها للكتابة  وانتهاء بالأيقونات المتناثرة على سطح المكتب. لعل أكثر من يتعامل بشكل مباشر مع هذه المنحنيات هم مصممو الجرافيكس. 
+
+<img class="rounded mx-auto d-block" src="/post/2020-06-28-bezier-curves_files/Bezier_fonts.jpeg" alt="" width="250px"/ >
+<img class="rounded mx-auto d-block" src="/post/2020-06-28-bezier-curves_files/Bezier_icons.png" alt="" width="550px"/ >
+
+قد تبدو الصور اعلاه مألوفة لكن ما علاقتها بمنحنيات بيزييه وما هو البعد الرياضي لتلك المنحنيات. 
+
+
+## التمثيل الرياضي لمنحنيات بييزييه
+
+#### الشرح الهندسي 
+سأقوم اولا بتمثيل الفكرة بشكل هندسي من خلال هذا المثال 
+
+سوف أستخدم حزمة قمت بكتابتها خصيصا لهذه التدوينة
+
+```{r loading_packages}
+# devtools::install_github("Hussain-Alsalman/bezieR")  # uncomment this to install it.
+library("bezieR")
+library("dplyr")
+library("tidyr")
+library("grid")
+library("gridExtra")
+library("here")  
+```
+
+لنرسم ثلاث نقاط على الشاشة  A, B , C 
+
+```{r simple_shape1}
+library("ggplot2")
+df <- data.frame(x = c(10,20,30), y = c(10,50,10), label = c("A", "B", "C"))
+g <- ggplot(df,mapping = aes(x = x, y = y)) +
+  geom_point() +
+  geom_label(aes(label = label),nudge_x = 0.5) +
+  theme_minimal() +
+  theme(panel.grid = element_blank(),
+        axis.title= element_blank(), 
+        axis.text = element_blank())
+g
+```
+
+
+
+لنصل تلك النقاط بخط مستقيم.  ثم نوصل منتصف AB بـ BC بخط مستقيم آخر سنطلق عليه DE. ثم نرسم نقطة في منتصفه سنطلق عليها F. 
+
+```{r simple_shape2}
+df1 <- data.frame(x = c(15,25), y = c(30,30), label = c("D", "E"))
+df2 <- data.frame(x = c(20), y = c(30), label = c("F"))
+
+g + geom_line() + geom_line(data = df1, color = "pink") + geom_label(data = df1, mapping = aes(label = label),nudge_y = -0.5) + 
+  geom_label(data = df2, mapping = aes(label = label),nudge_y = -0.5) 
+
+```
+
+حتى الآن كل ما نراه هو مجرد خطوط مستقيمة و نقطة واحدة ولا أثر لأي منحنى هنا فما الأمر؟. هنا نبدأ بفكرة جميلة نستطيع من خلالها رسم منحنى من تلك المعطيات. 
+أولا لنفترض أن هناك ساعة ما تبدأ من الصفر وتنتهي بـ ١٠٠. ولنفترض أيضا أن النقاط D,E,F تتقدم في المستقيم التي تقع عليه بقدر 0.1 من طول المستقيم. ونفترض كذلك أن هناك قلم مربوط بالنقطة F يرسم مكان تلك النقطة. ماذا تتوقع ستكون النتيجة؟ لنرى ذلك هنا 
+
+```{r animation, eval=FALSE}
+animate_bezier(cp_x =c(10,20,30), cp_y = c(10,50,10), save = TRUE)
+```
+
+<img class="rounded mx-auto d-block" src="/post/2020-06-28-bezier-curves_files/simple_shape_animation1.gif" alt="" width="500px"/ >
+
+ستكون النتيجة منحنى بييزيه من الدرجة التكعيبية (سأشرح ذلك لاحقا)  أليس ذلك رائع؟ 
+
+#### الشرح الرياضي  
+حتى نبني حدس رياضي قوي, لابد أن نرتدي نظارة الرياضيين. تقريبا كل الأشكال الهندسية يمكن التعبيرحتىحتى نبني حدس رياضي قوي, لابد أن نرتدي نظارة الرياضيين. تقريبا كل الأشكال الهندسية يمكن التعبير عنها عن طريق معادلة رياضية. ليس ذلك فحسب بل كل من تلك الأشكال الهندسية لها متغيرات تحدد خصائص الشكل الهندسي. المستقيم على سبيل المثال يحدده الميل ونقطة التقاطع لـ y . الدائرة كذلك يحددها طول نصف القطر ونقطة الأصل. كذلك المنحنى يمكن التعبير عنه بدالة رياضية. قد لا يبدو هذا الأمر مبهرا حتى الآن لكن ما وجده بيزييه و دوكاستلجو (دوكاستلجو أول من قام دراسة هذه المنحنيات وتطوير الخوارزميات لتقييمها) هو أنه بالإمكان تمثيل المنحنيات عن طريق معادلة متعددة حدود برينشتيان. حتى تكتمل الصورة دعنا نرجع بالزمن إلى الصفوف الأعدادية ونلتقي بالمعادلة التي ارهقت الكثير في امتحانات الرياضيات. 
+
+
+$$
+(a + b)^2 = a^2 + 2ab  + b^2 
+$$
+
+هذه المعادلة ماهي الا مفكوكة تربيع ذات الحدين. فإن كنت لا زلت تتذكر هذه المعادلة فلربما لا زلت تتذكر برهنة ذاتهذه المعادلة ماهي الا مفكوكة تربيع ذات الحدين. فإن كنت لا زلت تتذكر هذه المعادلة فلربما لا زلت تتذكر برهنة ذات الحدين التي من خلالها نستطيع  فك اي معادلة ذات الحدين من درجات أعلى.   
+هذا هو تعريف
+
+$$
+(x + y)^n = \sum^n_{k=0} \binom{n}{k} x^{n-k}y^k
+$$
+
+مبرهنة ذات الحدين ما هي الا عملية تجميع لكل المتغيرات في المعادلة فمثلا 
+
+$$
+ (\color{blue}{x} + \color{red}{y})^2 = a\cdot \color{blue}{x}\color{blue}{x} + b\cdot \color{blue}{x}\color{red}{y} + c\cdot \color{red}{y}\color{red}{y}  
+$$
+كذلك التكعيبي 
+
+$$ 
+(\color{blue}{x} + \color{red}{y} )^3 = a \cdot \color{blue}{x}\color{blue}{x}\color{blue}{x} + b \cdot \color{blue}{x}\color{blue}{x}\color{red}{y} + c \cdot \color{blue}{x}\color{red}{y}\color{red}{y}+ d \cdot \color{red}{y}\color{red}{y}\color{red}{y}
+$$
+أما بالنسبة إلى قيمة المعامل لكل حد, نستطيع استخراجها بكل سهولة من مثلث باسكال
+
+<img class="rounded mx-auto d-block" src="https://upload.wikimedia.org/wikipedia/commons/0/0d/PascalTriangleAnimated2.gif" alt="" width="200px"/>
+
+
+فلو رجعنا إلى الدالة التكعيبية مثلا سوف نستبدل قيم a, b, c, d بالقيم اعلاه 
+
+$$ 
+(\color{blue}{x} + \color{red}{y} )^3 = \color{green}{1} \cdot \color{blue}{x}\color{blue}{x}\color{blue}{x} + \color{green}{3} \cdot \color{blue}{x}\color{blue}{x}\color{red}{y} + \color{green}{3} \cdot \color{blue}{x}\color{red}{y}\color{red}{y}+ \color{green}{1} \cdot \color{red}{y}\color{red}{y}\color{red}{y} \\
+or \\ 
+= x^3 + 3x^2y + 3xy^2 + y^3
+$$
+بما أن منحنيات بيزييه ما هي إلا استيفاء خطي (linear interpolation) للمتغير t من الصفر إلى ١. سنقوم بإستبدال x بـ t و y بـ (1-t). بالتالي يمكننا التحكم بجميع حدود المعادلة من خلال متغير واحد فقط. 
+لنعوض تلك القيم في المعادلة التكعيبية مجددا 
+
+$$
+(\color{blue}{t} + \color{red}{1-t} )^3 = \color{blue}{t}^3 + 3\color{blue}{t}^2 \cdot \color{red}{1-t}  + 3\color{blue}{t}\cdot \color{red}{(1-t)} ^2 + \color{red}{(1-t)} ^3
+$$
+
+هذه الحدود تعرف بحدود برينشتاين ولها خصائص رياضية مهمة مثل التماثل والتطبيع بين الصفر والواحد.
+ للتوضيح فقط : لو مثلنا كل حد لوحده نخرج بهذه الصورة
+ 
+```{r breistein_terms, echo= FALSE}
+df_brenstien <- data.frame(t = seq(0,1,0.05))
+eq_coordinates <- make_terms(n = 4,cp = rep(1,4))
+df_br <- df_brenstien %>% mutate(first_term = t^3,
+                        second_term = 3*(t^2)*(1-t),
+                        third_term = 3*(t)*(1-t)^2, 
+                        fourth_term = (1-t)^3,
+                        combined = eq_coordinates(t)) %>%
+                        gather(term, value,-t)
+
+ggplot(df_br, mapping = (aes(x = t))) +
+  geom_line(mapping = aes(y =value, color = term))  + theme_minimal()
+```
+
+
+احد الطرق للتلاعب بهذه المنحنيات هو تغيير وزن كل حد في المعادلة. لندخل w على المعادلة. ايضا سوف نستخدم هذه المعادلة الآن لكل من احداثيات X و Y . 
+
+$$
+x  = \color{orange}{w_{x_{0}}} t^3 + \color{orange}{w_{x_{1}}} 3t^2 \cdot (1-t)  + \color{orange}{w_{x_{2}}} 3t\cdot (1-t)^2 + \color{orange}{w_{x_{3}}} (1-t)^3 \\
+y  = \color{orange}{w_{y_{0}}} t^3 + \color{orange}{w_{y_{1}}} 3t^2 \cdot (1-t)  + \color{orange}{w_{y_{2}}} 3t\cdot (1-t)^2 + \color{orange}{w_{y_{3}}} (1-t)^3 \\
+t \in [0,1]
+$$
+
+لنفترض أن قيم اوزان المحاور كالتالي
+
+- wx : 10,20,30,40
+- wy : 10,50,10,25
+
+لنعوض هذه القيم في المعادلة ولنقم برسم المنحنى الناتج 
+
+
+
+```{r}
+df_w <- data.frame(t = seq(0,1,0.005))
+wx <- c(10,20,30,40)
+wy <- c(10,50,10,25)
+eq_x <- make_terms(n = 4,cp = wx)
+eq_y <- make_terms(n = 4, cp = wy)
+df_wx <- df_w %>% mutate(first_term = wx[1]*t^3,
+                        second_term = wx[2]*3*(t^2)*(1-t),
+                        third_term = wx[3]*3*(t)*(1-t)^2,
+                        fourth_term = wx[4]*1*(1-t)^3,
+                        combined = eq_x(t)) %>%
+                  gather(term, value,-t)
+
+df_wy <- df_w %>% mutate(first_term = wy[1]*1*t^3,
+                        second_term = wy[2]*3*(t^2)*(1-t),
+                        third_term = wy[3]*3*(t)*(1-t)^2,
+                        fourth_term = wy[4]*(1-t)^3,
+                        combined = eq_y(t))%>%
+                  gather(term, value,-t)
+df_xy <- df_w %>% mutate(x = eq_x(t), y = eq_y(t))
+
+br_gx <- ggplot(df_wx, mapping = (aes(x = t))) +
+  geom_line(mapping = aes(y =value, color = term),show.legend = FALSE)  + theme_minimal() + 
+  labs(title = "terms for X")
+br_gy <-  ggplot(df_wy, mapping = (aes(x = t))) +
+  geom_line(mapping = aes(y =value, color = term), show.legend = FALSE)  + theme_minimal() + 
+  labs(title="terms for Y")
+g_xy <- ggplot(df_xy,mapping = aes(x = x, y = y)) + geom_path()+ theme_minimal() + 
+  labs(title="Bezier Curve")
+
+grid.arrange(br_gx, br_gy, g_xy, ncol = 3)
+```
+هذه الأوزان تعرف بنقاط التحكم للمنحنى ويرمز لها بـ $P_{n}$  
+
+```{r}
+df_points <- data.frame(x = wx, y= wy)
+g_xy +geom_path(data = df_points, alpha = 0.3)+ geom_point(data=df_points)  + geom_text(df_points,mapping = aes(x=x,y=y,label = paste0("(",x,",",y,")")), nudge_x = 2,nudge_y = 2)
+
+```
+
+بالتالي نصل إلى التعريف العام لمعادلة بيزييه الشهيرة
+
+$$
+B(t) = \sum^n_{i=0} \binom{n}{i} \cdot (1-t)^{n-i} \cdot t^{i} \cdot P_{i} 
+$$
+
+## صلة منحنيات بيزييه بعلم البيانات 
+
+علماء الإحصاء والرياضيات قامو بتطوير نوع من النمذجة يسمى بالـ B-spline . هذا النوع ما هو الا دمج مجموعة من منحنيات بيزييه بطريقة تراكمية حيث كل منحنى يعتمد على المنحنى الذي يسبقه.  B-splines تستخدم بشكل كبير لصنع النماذج للبيانات الغير خطية على خلاف Linear Regression . الحقيقة أن نماذج B-splines تتطلب بحث وتفصيل لا تسعه هذه التدوينة لكن كل الذي يجدر بك معرفته هو أنها قائمة على كثير من المبادىء الرياضية التي قمنا بشرحها مع بعض الإختلافات المحورية.  
+
+
+### حزمة BezieR 
+
+لقد ألهمتني المعادلات الرياضية لمنحنيات بيزيه أن اكتب حزمة تحلل هذه المنحنيات وتقوم ايضا بأنميشن لعرض جمالها ودقتها. 
+
+##### كتابة المعادلة 
+الحزمة توفر دالة `make_terms`  تقوم بكتابة المعادلة كاملة لأي نقاط تحكم تريدها. كل ما عليك هو تحديد درجة المعادلة ثم تزويد نقاط التحكم . لنفترض أننا نريد معادلة من الدرجة الرابعة
+
+```{r}
+eq_1 <- make_terms(n = 5, cp = c(10,30,50,20,40)) # 1 = power 0
+eq_1()
+```
+
+##### تحليل المنحنى 
+الحزمة ايضا توفر دالة لتحليل المنحنى `analyze_bezier` . هذه الدالة تقوم برسم نقاط التحكم وصلتها ببعضها البعض كذلك تقوم برسم المنحنى ذاته
+
+
+```{r}
+analyze_bezier(cp_x = wx, 
+               cp_y = wy)
+
+```
+
+بإمكانك ايضا تحليل ملف svg بإستخدام دالة `analyze_svg`ورسم جميع المنحنيات الموصولة وجميع نقاط التحكم. هذه الدالة تضيف جمال تحليلي للصورة. 
+
+```{r}
+analyze_svg(svg_path =here("static", "data", "drawing.svg"))
+```
+
+##### انيميشن 
+اضفت للحزمة كل من `animate_bezier` و `animate_svg` لإضافة الأنيميشن للمنحنى بعد تحليله. 
+
+```{r, eval=FALSE}
+animate_bezier(cp_x = c(wx,50), 
+               cp_y =  c(wy,40))
+
+```
+
+
+<img class="rounded mx-auto d-block" src="/post/2020-06-28-bezier-curves_files/animated_graph.gif" alt="" width="250px"/ >
+
+كذلك بالإمكان عمل انميشن لملف svg بشكل مباشر 
+
+لنأخذ هذه الرسمة كمثال : 
+```{r}
+analyze_svg(here("static", "data", "Duck.svg"))
+```
+
+```{r, eval=FALSE}
+animate_svg(svg_path =here("static", "data", "Duck.svg"),des_path =here("static", "data") )
+```
+```
+
+
+<img class="rounded mx-auto d-block" src="/post/2020-06-28-bezier-curves_files/Duck.gif" alt="" width="500px"/ >
+
+
+##### طريقة الحصول على الحزمة 
+تم كتابة هذه الحزمة لأغراض تعليمية لذلك لن تكون متوفرة على CRAN لكن يمكن الحصول عليه عن طريق GitHub من خلال هذا الكود 
+
+```{r, eval=FALSE}
+devtools::install_github("Hussain-Alsalman/bezieR") 
+```
+
+## الخلاصة 
+الرسم بالمعادلات امر رائع فعلا. الرياضيات علم بحت لكنه فنان ايضا. لقد تعلمت كثير خلال قراءتي لمنحنيات بيزيه. فلطلما تساءلت عن كيفية عمل SVG ولماذا نرى الكثير من النقاط حول تلك المنحنيات في برامج الرسم مثل Adobe Illustrator و Inkscape. 
+
+هذه التدوينة تستهدف من لديهم فضول دائم حول كيفية عمل الأشياء ومن يحب التسلية الذهنية بالرياضيات. إن كنت من هؤلاء فهذه المدونة لك ويسرني إكمال النقاش مع في قسم التعليقات. 
