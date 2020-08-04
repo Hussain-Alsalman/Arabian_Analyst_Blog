@@ -1,0 +1,367 @@
+---
+title: تحليل محادثات الواتس
+author: Hussain
+date: '2020-07-31'
+slug: whatsapp-analysis
+categories: []
+tags:
+  - حزم R
+  - مبتدئين
+---
+
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="/rmarkdown-libs/leaflet/leaflet.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/leaflet/leaflet.js"></script>
+<link href="/rmarkdown-libs/leafletfix/leafletfix.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/Proj4Leaflet/proj4-compressed.js"></script>
+<script src="/rmarkdown-libs/Proj4Leaflet/proj4leaflet.js"></script>
+<link href="/rmarkdown-libs/rstudio_leaflet/rstudio_leaflet.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/leaflet-binding/leaflet.js"></script>
+<link href="/rmarkdown-libs/leaflet-markercluster/MarkerCluster.css" rel="stylesheet" />
+<link href="/rmarkdown-libs/leaflet-markercluster/MarkerCluster.Default.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/leaflet-markercluster/leaflet.markercluster.js"></script>
+<script src="/rmarkdown-libs/leaflet-markercluster/leaflet.markercluster.freezable.js"></script>
+<script src="/rmarkdown-libs/leaflet-markercluster/leaflet.markercluster.layersupport.js"></script>
+
+
+<div id="مقدمة" class="section level3">
+<h3>مقدمة</h3>
+<p>في ظل الظروف الحالية (وباء فايروس كورونا) وتحت واقع الحجر المنزلي,اصبح معظم التواصل مع العائلة والأصدقاء على منصات برامج التواصل الأجتماعي مثل الواتس والإنستقرام وتويتر وغيرها. هذا التغير في السلوك بلا شك قد ادى إلى صنع كمية اكبر من البيانات لتلك المنصات. وكشخص يحب البيانات, تولدت لدي فكرة تحليل بعض تلك البيانات بنفسي لعلي اكتشف شيء عن نفسي او عن اصدقائي.</p>
+</div>
+<div id="سبب-اختيار-بيانات-برنامج-الواتس" class="section level3">
+<h3>سبب اختيار بيانات برنامج الواتس</h3>
+<p>برنامج الواتس للمحادثات الفورية اصبح الوسيلة الشبه معتمدة لشريحة كبيرة من الناس في التواصل الإجتماعي خصوصا في منطقة الشرق الأوسط. ليس هذا فحسب بل بدأت كثير من الشركات والمؤسسات بإعتماد حساب رسمي لها على هذا البرنامج للتواصل المباشر مع عملاءها وتقديم الدعم الفوري لهم.</p>
+<p>بالإضافة إلى ذلك,الأمر الذي دفعني لإختيار بيانات برنامج الواتس هو جاهزية استخراج بيانات المحادثات من أي مجموعة بسهولة. الأمر الآخر هو ان لا استخدم البرامج الأخرى (الإنستقرام, السنابشات,…) بكثافة وبالتالي لن يكون هناك كمية بيانات وافرة للتحليل.</p>
+</div>
+<div id="اسئلة-التحليل" class="section level3">
+<h3>اسئلة التحليل</h3>
+<p>قبل أن نشرع بخطوة التحليل, علينا اولا ان نضع اسئلة تحدد الهدف والغاية من التحليل. لذلك سوف ابدأ بهذه الأسئلة ولعل البيانات ترشدنا إلى المزيد خلال عملية التحليل.</p>
+<p>1- هل هناك اختلاف مستوى نشاط مجموعة اصدقاء (الدفعة 2005-2006) خلال الفترة الحالية مقارنة بالاوقات السابقة.</p>
+<p>2- من هم اكثر الأعضاء نشاطا؟</p>
+<ul>
+<li><p>بالنسبة إلى عدد الرسائل.</p></li>
+<li><p>بالنسبة إلى متوسط عدد الأحرف بالرسالة الواحدة.</p></li>
+</ul>
+<p>3- ما هي اكثر الإيموجيز استخداماً بشكل عام وبشكل خاص؟</p>
+<p>4- ما هي المفردات الأكثر شيوعًا في المحادثات؟</p>
+<p>5- ما هي الأماكن التي نقوم بمشاركتها في المجموعة؟</p>
+</div>
+<div id="إستخراج-بيانات-المحادثات" class="section level3">
+<h3>إستخراج بيانات المحادثات</h3>
+<p>بالإمكان استخراج تاريخ المحادثات لأي مجموعة عن طريق الخطوات التالية</p>
+<p>1- اختر المجموعة التي تريد ثم اضغط على اسم المجموعة في الأعلى</p>
+<p>2- اضغط على “Export Chat”. اختر “without media”</p>
+<ul>
+<li>سيتم استخراج تاريخ المحادثات في ملف مضغوط</li>
+</ul>
+<p>3- اختر طريقة الإرسال. <em>أنصح بإستخدام استخدم الإيميل الشخصي</em></p>
+</div>
+<div id="قراءة-ومعالجة-البيانات" class="section level3">
+<h3>قراءة ومعالجة البيانات</h3>
+<p>عندما بدأت العمل على هذه التدوينة كنت بصدد كتابة كود (من الصفر) يقوم بقراءة كل رسالة واستخراج اسم المرسل والتاريخ وكذلك النص نفسه. لكن ثقتي بمجتمع لغة R دفعتني إلى البحث اولا عن حزمة تقوم بذلك عوضا عن إعادة اختراع العجلة كما يقولون. انا سعيد بأن اخبرك أن مجتمع R لم يخيب ظني.</p>
+<p>لقد وجدت هذه الحزمة <code>rwhatsapp</code> والتي لا تقوم بإستخراج المعلومات التي كنت اريدها فحسب بل ايضا تستخرج الأيموجيز من كل رسالة. هذا الأمر سهل علي الإجابة على السؤال الثالث.</p>
+<p>اولا سوف اقوم بإرفاق مجموعة من الحزم التي سأستخدمها في التحليل. ستجد وصف مختصر بجانب كل حزمة</p>
+<pre class="r"><code>library(&quot;rwhatsapp&quot;) # حزمة خاصة لقراءة ومعالجة بيانات المحادثات على الواتس
+library(&quot;ggplot2&quot;) # حزمة لتمثيل البيانات 
+library(&quot;dplyr&quot;) # حزمة لمعالجة البيانات
+library(&quot;forcats&quot;) # حزمة للتعامل مع البيانات الغير كمية 
+library(&quot;lubridate&quot;) # حزمة للتعامل مع بيانات الوقت والتاريخ
+library(&quot;tidyr&quot;) # حزمة لمعالجة البيانات 
+library(&quot;tidytext&quot;) # حزمة لتحليل البيانات النصية
+library(&quot;magrittr&quot;) # حزمة لصنع الـ pipes
+library(&quot;stringr&quot;) # حزمة للتعامل مع البيانات النصية
+library(&quot;stopwords&quot;) # حزمة تحويل على قائمة بالمفردات التي لا معنى لها</code></pre>
+<p><em>ملاحظة</em> : في الخطوات القادمة سوف اقوم ببعض العمليات على البيانات للحفاظ على خصوصية الأعضاء</p>
+<p>نبدأ بقراءة البيانات ومعاينتها (<em>قد تستغرق هذه العملية وقت طويل حسب حجم الملف</em>)</p>
+<pre class="r"><code>df &lt;- rwa_read(&quot;~/Documents/ArabianAnalyst/CPC.txt&quot;, verbose = TRUE)
+#This step is to annonomize authors and source to protect privacy 
+set.seed(1010)
+df1 &lt;- df %&gt;% mutate(author = fct_anon(author)) %&gt;% select(-source)
+str( df1 %&gt;%
+       mutate(text = openssl::sha256(text)),
+     max.level = 1,
+     vec.len=4)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    171302 obs. of  6 variables:
+##  $ time      : POSIXct, format: &quot;2016-04-27 10:06:18&quot; &quot;2016-04-27 10:06:19&quot; ...
+##  $ author    : Factor w/ 113 levels &quot;001&quot;,&quot;002&quot;,&quot;003&quot;,..: 40 40 40 15 5 65 62 108 40 2 ...
+##  $ text      : &#39;hash&#39; chr  &quot;f1778b4b58e16ff14f45370194c5a5218717ebc04698ff0319d3cacec1b05568&quot; &quot;b47f5020b9bb5be6d2abbcf4f6e93ae2aa5ceba18de11e5165f0e1062baac235&quot; &quot;1879274230f4dbdcbc976880dd0a6147a874d16354078ba9d74da5dad5ad8e63&quot; &quot;7c5027fdc320d0916870370d205ece21e871000c0bde8053d13165bbf297cd85&quot; ...
+##  $ id        : int  1 2 3 4 5 6 7 8 9 10 ...
+##  $ emoji     :List of 171302
+##  $ emoji_name:List of 171302</code></pre>
+<p>في البيانات اعلاه نجد أن لدينا 5 متغيرات و 171 ألف رسالة. تعود هذه البيانات إلى اكثر من اربع سنوات تقريبا. نلاحظ ايضا ان هناك اكثر من 113 عضو خلال تلك نالفترة. هذا بالطبع لا يعني ان هذا العدد نفس عدد الأعضاء الحالي.</p>
+<div id="هل-هناك-اختلاف-في-مستوى-نشاط-المجموعة-خلال-الفترة-الحالية-مقارنة-بالاوقات-السابقة" class="section level6">
+<h6>هل هناك اختلاف في مستوى نشاط المجموعة خلال الفترة الحالية مقارنة بالاوقات السابقة؟</h6>
+<pre class="r"><code># Feature Engineering
+df1 &lt;- df1 %&gt;% 
+  mutate(day = date(time)) %&gt;% 
+  mutate(day_num = yday(time)) %&gt;% 
+  mutate(weekdays = weekdays(time) ) %&gt;% 
+  mutate(hour = hour(time)) %&gt;% 
+  mutate(month = month(time, label = TRUE)) %&gt;%
+  mutate(year = year(time)) 
+
+## Group Activity 
+df1 %&gt;% 
+  count(day) %&gt;% 
+  ggplot(aes(x = day, y= n)) +
+  geom_bar(stat = &quot;identity&quot;) +
+  ylab(&quot;# messages&quot;) + xlab(&quot;Date&quot;) +
+  ggtitle(&quot;Group Activity since April 2016&quot;) + theme_classic()</code></pre>
+<p><img src="/post/2020-07-31-whatsapp-analysis_files/figure-html/group-activity-1.png" width="672" /></p>
+<p>نلاحظ ان المجموعة نشطة بشكل عام لكن ازدادة نشاطا مع بداية جائحة COVID-19. أيضا نلاحظ ان هناك انقطاع في نهاية سنة 2017 وهذا يعود لسبب شخصي حيث كنت مسافرا في تلك الفترة ومعها تغير رقم الهاتف المحمول وبالتالي لم يتم ارشفة هذه الفترة.</p>
+<p>يمكن مقارنة نشاط المجموعة عن كثب بعتماد رقم اليوم السنوي كوحدة القياس</p>
+<p>التصوير البياني ادناه يؤكد لنا ازدياد نشاط المجموعة في سنة 2020 بالمقارنة مع السنوات السابقة. كما نلاحظ تصاعد في عدد الرسائل فوق خط 600 رسالة باليوم لبعض الأيام. بعد معاينة تلك الأيام توضح لي اسباب هذا التصاعد كما هي مبينة.</p>
+<pre class="r"><code># Summarized data for number of messeges a day
+df_summarized &lt;-  df1 %&gt;% 
+  filter(year != &quot;NA&quot;) %&gt;% 
+  mutate( year = as.factor(year)) %&gt;% 
+  group_by(year) %&gt;% 
+  count(day_num)
+
+
+# Annotation data frame for ploting
+d_note  &lt;- tribble(
+  ~date, ~text,
+  &quot;2020-03-08&quot;, &quot;حجر مدينة القطيف&quot;,
+  &quot;2020-03-29&quot;, &quot;تفاقم الجائحة في امريكا&quot;,
+  &quot;2020-05-24&quot;, &quot;دخول شهر رمضان&quot;,
+)
+
+d_note &lt;- d_note %&gt;% 
+  mutate(day = date(date)) %&gt;% 
+  mutate(day_num = yday(day)) %&gt;% 
+  mutate(year = as.factor(year(day))) %&gt;% 
+  inner_join(df_summarized, by = c(&quot;year&quot;, &quot;day_num&quot;))
+
+
+
+ g1 &lt;- df_summarized %&gt;% 
+  ggplot(aes(x = day_num, y= n,group = year, color = year,alpha =year)) +
+  geom_path(stat = &quot;identity&quot;) +
+  labs(y =&quot;# messages&quot; , x = &quot;# Day of 365&quot;,alpha = &quot;Year&quot;, color = &quot;Year&quot;) +
+  scale_alpha_manual(values = c(rep(0.2,4), 1)) +
+  ggtitle(&quot;Group Activity since April 2016&quot;) +
+  geom_text(d_note, mapping = aes(x = day_num, y = n , label = text), show.legend = FALSE) + 
+  ggtitle(&quot;# Messeges spikes in 2020&quot;) +
+  theme_classic()
+ 
+ g1</code></pre>
+<p><img src="/post/2020-07-31-whatsapp-analysis_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+</div>
+<div id="من-هم-اكثر-الأعضاء-نشاطا" class="section level4">
+<h4>من هم اكثر الأعضاء نشاطا؟</h4>
+<p>للإجابة على هذا السؤال سوف نقوم بتمثيل البيانات حسب عدد الرسائل المرسلة . كذلك سوف نقوم بالإشارة إلى متوسط عدد الأحرف في الرسالة.</p>
+<pre class="r"><code>df_usr_summarized &lt;- df1 %&gt;%
+    filter(author != &quot;NA&quot;) %&gt;% 
+    mutate(author = fct_rev(fct_infreq(fct_lump_min(author, min = 20)))) %&gt;% 
+    count(author) %&gt;% 
+    filter(n &gt; 600)
+
+df_usr_mean&lt;- df1 %&gt;%
+  filter(author != &quot;NA&quot;) %&gt;% 
+  filter(!str_detect(text, c(&quot;media omitted&quot;,
+                             &quot;image omitted&quot;,
+                             &quot;audio omitted&quot;,
+                             &quot;video omitted&quot;,
+                             &quot;sticker omitted&quot;))) %&gt;% 
+  mutate(author = fct_rev(fct_infreq(fct_lump_min(author, min = 20)))) %&gt;% 
+  mutate(msg_length = nchar(text)) %&gt;% 
+  group_by(author) %&gt;% 
+  summarise(&quot;avr_msg_lngth&quot; = round(mean(msg_length),0), .groups = &quot;keep&quot;) %&gt;%
+  right_join(df_usr_summarized,by = &quot;author&quot;)
+
+
+g2 &lt;- df_usr_summarized %&gt;%
+  ggplot(aes(x = reorder(author, n), y = n, fill = ifelse(n&gt;mean(n), &quot;amber&quot;, &quot;lightblue&quot;))) +
+  geom_bar(stat = &quot;identity&quot;, show.legend = FALSE) +
+  geom_text(mapping = aes(y = n, label = n), size = 2.5, nudge_y = 620) +
+  scale_y_discrete(expand = expansion(add = c(0,3000))) +
+  scale_x_discrete(expand =c(0,0))+
+  coord_flip() + 
+  labs(title =&quot;Most Active Members in term of # of Messages&quot;,
+       subtitle = paste0(&quot;Above average is colored in red ( average = 1839)&quot;),
+       x =&quot;&quot;, y = &quot;&quot;) +
+  theme_classic() + 
+  theme(axis.text.y = element_text(size = 9),
+        axis.line = element_blank(), 
+        axis.ticks = element_blank())
+g2 +  
+  geom_col(data = df_usr_mean,
+           mapping = aes(group = author,x = reorder(author,n), y =avr_msg_lngth*60),
+           alpha = 0.5,
+           fill = &quot;gray&quot;,
+           show.legend = FALSE)  </code></pre>
+<p><img src="/post/2020-07-31-whatsapp-analysis_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>الرسم البياني اعلاه يوضح اكثر الأعضاء نشاطا من حيث عدد الرسائل. يبدو ان رقم 099 هو اكثر الأعضاء سوالف فالفارق كبير بينه وبين المركز الثاني. إذا كانت المشاركات بهذا الشكل فهذا يبين أن لعله من الأفضل انشاء مجموعة منفصلة للأعضاء المعلمين بالأحمر.</p>
+<p>من جانب آخر, نجد ان بعض الاعضاء اقل نشاطا لكنهم اطول محتوى. الأعمدة الرمادية تشير إلى مقارنة المتوسط الحسابي لعدد الأحرف في الرسالة الواحدة لكل من الأعضاء. بشكل عام الأعضاء الأكثر نشاط عادة ما تكون رسائلهم اقصر محتوى.</p>
+</div>
+<div id="هل-بالإمكان-معرفة-جدول-الأعضاء-اليومي-من-خلال-رسائلهم-على-الواتس" class="section level4">
+<h4>هل بالإمكان معرفة جدول الأعضاء اليومي من خلال رسائلهم على الواتس؟</h4>
+<p>طرأ على بالي هذه السؤال خلال عملية التحليل . السبب هو أنني اعتقد أن معظم الأعضاء يستخدمون برنامج الواتس على مدار اليوم ماعدا النوم. لنرى إن كنت محقاً</p>
+<pre class="r"><code>  ## general activity for the top 10  active members during the weekdays   
+  top_15 &lt;- df1 %&gt;%
+    mutate(day = date(time)) %&gt;%
+    filter(author != &quot;NA&quot;) %&gt;% 
+    mutate(author = fct_rev(fct_infreq(fct_lump_min(author, min = 20)))) %&gt;% 
+    count(author) %&gt;% arrange(desc(n)) %&gt;% top_n(15) %&gt;% select(author) 
+  
+  df1 %&gt;% 
+    filter(author %in% top_15$author) %&gt;% 
+    group_by(author , hour) %&gt;% 
+    summarise(n = n()) %&gt;% 
+    ggplot() +
+    geom_boxplot(aes(y = hour, x = n, group = hour), outlier.shape = NA)+
+   # scale_x_discrete(limits = c(0,30)) + 
+    coord_flip()+
+    facet_wrap(author~., scales = &quot;free_y&quot; ) + 
+    labs(title = &quot;Pattern of activity top 15  active group members around the 24 clock&quot;, 
+         x = &quot;&quot;, y = &quot;&quot;) + 
+    theme_classic() + 
+    theme(axis.text.y = element_blank(), 
+          axis.ticks.y = element_blank(), 
+          axis.line.y = element_blank())</code></pre>
+<p><img src="/post/2020-07-31-whatsapp-analysis_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>الرسم البيانات اعلاه يؤكد ما كنت اتوقعه حيث أن مجموعة الأعضاء الأكثر نشاطُا عادة ما يكونو نشطين خلال اليوم بأكمله. النمط بصفة عامة : يبدأ نشاط الأعضاء من الصباح (وقت الدوام) ويزداد حتى ذروته مع فترة استراحة الغداء ثم يستمر حتى وقت العشاء. الملفت أن العضو رقم 106 يمتنع بالغالب من استخدام الواتس خلال اوقات الدوام ولكنه يعوض غيابه بعد نهاية الدوام.</p>
+</div>
+<div id="ما-هي-اكثر-الإيموجيز-استخداما-بشكل-عام-وبشكل-خاص" class="section level4">
+<h4>ما هي اكثر الإيموجيز استخداماً بشكل عام وبشكل خاص؟</h4>
+<p>هذا السؤال من السهل الإجابة عليه من خلال الرسم البياني التالي</p>
+<pre class="r"><code>df1 %&gt;% 
+  unnest(emoji) %&gt;%
+  count(emoji, sort = TRUE) %&gt;%
+  top_n(n = 14, n) %&gt;% 
+ 
+  ggplot(aes(x = reorder(emoji, n), y = n, fill = emoji)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  labs(title = &quot;Most often used emojis&quot;, x = &quot;&quot;, y =&quot;&quot;) +
+  scale_y_discrete(expand = c(0,0))+
+  theme_classic()+
+  theme(axis.ticks.y = element_blank(), 
+        axis.text.y = element_text(size = 15), 
+        axis.line = element_blank())</code></pre>
+<p><img src="/post/2020-07-31-whatsapp-analysis_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>وهذه معظم الأيموجيز المستخدمة بالنسبة لأعلى خمس اعضاء نشطين بالمجموعة</p>
+<pre class="r"><code>  selected_people &lt;- top_15$author[1:5]
+    df1 %&gt;% filter(author %in% selected_people) %&gt;% 
+    unnest(emoji) %&gt;%
+    count(author, emoji, sort = TRUE) %&gt;%
+    group_by(author) %&gt;%
+    top_n(n = 6, n) %&gt;% 
+    ggplot(aes(x = reorder(emoji, n), y = n, fill = author)) +
+    geom_col(show.legend = FALSE) +
+    coord_flip() + 
+      facet_wrap(~author, ncol = 2, scales = &quot;free_y&quot;) +
+      labs(title =&quot;Most often used emojis&quot;, x = &quot;&quot;, y = &quot;&quot;) +
+      theme(axis.text.y = element_text(size = 10),
+            axis.ticks.y = element_blank())</code></pre>
+<p><img src="/post/2020-07-31-whatsapp-analysis_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+</div>
+<div id="ما-هي-المفردات-الأكثر-شيوعا-في-المحادثات" class="section level4">
+<h4>ما هي المفردات الأكثر شيوعًا في المحادثات؟</h4>
+<p>من الطرق المستخدمة في تحليل النصوص هو استخدام الـ tf-idf . هذه الطريقة الشائعة تساعد على استخراج المفردات التي تميز مستند من غيره. في هذا المثال, سوف نحاول تمييز مفردات الأعضاء من غيرهم.</p>
+<pre class="r"><code>to_remove &lt;- c(stopwords(language = &quot;ar&quot;, source = &quot;misc&quot;),stopwords(language = &quot;en&quot;), &quot;media&quot;, &quot;omitted&quot;,  &quot;image&quot;,  &quot;sticker&quot;,  &quot;video&quot;,  &quot;audio&quot;, &quot;الله&quot;,
+&quot;يا&quot;, &quot;بس&quot;, &quot;مو&quot;,&quot;الي&quot;, &quot;ها&quot;, &quot;أبو&quot;, &quot;https&quot;, &quot;ويش&quot;, &quot;انت&quot;, &quot;لو&quot;, &quot;يعني&quot;, 
+&quot;message&quot;, &quot;deleted&quot;, &quot;أن&quot;,&quot;أنا&quot;, &quot;شي&quot;,&quot;هدي&quot;,&quot;هذي&quot;,&quot;عليك&quot;, &quot;twitter.com&quot;, 
+&quot;علشان&quot;, &quot;ليش&quot;, &quot;زي&quot;,&quot;لك&quot;, &quot;احنا&quot;, &quot;يقول&quot;, &quot;حق&quot;, &quot;ترى&quot;, &quot;الحين&quot;, &quot;انا&quot;, 
+&quot;هل&quot;, &quot;طيب&quot;,&quot;الي&quot;, &quot;حد&quot;, &quot;status&quot;,&quot;d8&quot;,&quot;s&quot;,&quot;بو&quot;, &quot;دا&quot;, &quot;وين&quot;, &quot;d9&quot;, &quot;دي&quot;,&quot;يبغى&quot;, 
+&quot;أحد&quot;, &quot;إذا&quot;, &quot;نص&quot;, &quot;صار&quot;, &quot;بالله&quot;, &quot;عنده&quot;, &quot;أو&quot;,&quot;فيك&quot;, &quot;بعدين&quot;, &quot;شوي&quot;, &quot;منهو&quot;, 
+&quot;ليي&quot;, &quot;اللي&quot;,&quot;أبو&quot;, &quot;متا&quot;,&quot;هاذي&quot;,&quot;حتا&quot; , &quot;مادري&quot;,&quot;تبغا&quot;,&quot;هذولا&quot;,&quot;يبغا&quot;,&quot;مب&quot;,
+&quot;يبغي&quot;,&quot;خي&quot;,&quot;انزين&quot;,&quot;ويشي&quot;,&quot;ماادري&quot;,&quot;ماشاءالله&quot;,&quot;شاءالله&quot;,&quot;كده&quot;,&quot;شدي&quot;,&quot;هههه&quot;,
+&quot;ههه&quot;,&quot;والا&quot;,&quot;ياللا&quot;,&quot;كيدا&quot;,&quot;واللهي&quot;,&quot;اليهم&quot;,&quot;ويه&quot;,&quot;اله&quot;,
+&quot;25d8&quot;,&quot;25d9&quot;)
+                   
+    
+    df1 %&gt;% 
+      filter(author %in% selected_people) %&gt;% 
+      unnest_tokens(input = text,
+                    output = word) %&gt;%
+      filter(!word %in% to_remove) %&gt;%
+      count(author, word, sort = TRUE) %&gt;%
+      bind_tf_idf(term = word, document = author, n = n) %&gt;%
+     group_by(author) %&gt;%
+      top_n(n = 6, tf_idf) %&gt;%
+      ggplot(aes(x = reorder_within(
+        # This step is encrypt the words to protect the privacy of members
+        substring(openssl::sha1(word),1,5),
+        n, author), y = n, fill = author)) +
+      geom_col(show.legend = FALSE) +
+      ylab(&quot;&quot;) +
+      xlab(&quot;&quot;) +
+      coord_flip() +
+      facet_wrap(~author, scales = &quot;free_y&quot;) +
+      scale_x_reordered() +
+      ggtitle(&quot;Important words using tf–idf by author&quot;)  </code></pre>
+<p><img src="/post/2020-07-31-whatsapp-analysis_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>يؤسفني أنه لن نستطيع تحليل نتائج هذا الرسم البياني لأنني قمت بتشفير الكلمات الشائعة حرصا على خصوصية اعضاء المجموعة لكن هذا لا يعني ان جهودنا ذهبت سدى. بإمكانك تجريب الكود بعد إزالة جزئية التشفير والإطلاع على النتائج الخاصة بك.</p>
+</div>
+</div>
+<div id="ما-هي-الأماكن-التي-نقوم-بمشاركتها-في-المجموعة" class="section level3">
+<h3>ما هي الأماكن التي نقوم بمشاركتها في المجموعة؟</h3>
+<p>خاصية مشاركة المكان على برنامج الواتس هي احد اهم واكثر الخصائص التي استخدمها بشكل يومي. لذلك اجده من الشيق أن اتمكن من تمثيل كل ما تم مشاركته خلال الأربع سنوات الماضية في هذه المجموعة. بعد الإطلاع على عينة من المحادثات اكتشفت ان استخراجها لن يكون عملية سهلة فالأماكن المتشاركة في الواتس تنقسم إلى نوعين .</p>
+<ul>
+<li><p>النوع الأول : يكون فيها نص الرسالة متضمن الأحداثيات</p></li>
+<li><p>النوع الثاني: يكون فيها نص الرسالة متضمن لرابط مختصر لخرائط جوجل</p></li>
+</ul>
+<p>النوع الأول سهل جدا استخراج الأحداثيات عن طريق استخدام Regular Expression . لكن النوع الثاني سوف يتطلب منا أن نمدد الرابط اولا ثم يقوم موقع خرائط جوجل بمعالجته وتزويد الأحداثيات في الرابط الجديد. لا تقلق هناك حيلة بإمكاننا استخدامها لفعل ذلك عن طريق تلقائية عملية التصفح وإرسال الروابط وتمديدها ومعالجتها. سوف يستغرق الأمر لكنه يستحق العناء.</p>
+<pre class="r"><code># Extracting Coordinates from Type I 
+type1 &lt;-regexpr(text = df1$text,pattern =&#39;(?&lt;=q=)[0-9][0-9].[0-9]+,[0-9][0-9].[0-9]+&#39; ,perl = TRUE)
+urls_type1 &lt;- regmatches(df1$text, m=type1)
+cordn1_df &lt;- data.frame(stringr::str_split(urls_type1,pattern = &quot;,&quot;,simplify = TRUE))
+cordn1_df$X1 &lt;- as.numeric(cordn1_df$X1)
+cordn1_df$X2 &lt;- as.numeric(cordn1_df$X2)
+colnames(cordn1_df) &lt;- c(&quot;Lat&quot;, &quot;Lon&quot;)</code></pre>
+<p>لقد نجحنا بإستخراج الأحداثيات من النوع الأول بكل سهولة وبقي لنا النوع الثاني.</p>
+<p>أولا سوف نقوم بتشغيل سيرفر خاص بمتصفح فايرفكس لكي نستطيع تلقائية التصفح.</p>
+<pre class="bash"><code># pulling an image from selenium to drive firefox 
+docker pull selenium/standalone-firefox:2.53.0
+
+# running the container 
+docker run --rm -d -p 4445:4444 selenium/standalone-firefox:2.53.0</code></pre>
+<p>هنا نربط الحزمة بالسيرفر الذي قمنا بتشغيله</p>
+<pre class="r"><code>library(&quot;RSelenium&quot;)
+rDr &lt;- remoteDriver(
+  port = 4445L
+)
+rDr$open()</code></pre>
+<p>هنا نقوم بتصف الروابط وتمديدها حتى نستخرج الإحداثيات</p>
+<pre class="r"><code>type2 &lt;- regexpr(text =df1$text, pattern =&#39;https://goo.gl/maps/[0-9a-zA-Z]+&#39;, perl = TRUE)
+urls_type2 &lt;- regmatches(df1$text, m=type2)
+
+cordn2_df &lt;- data.frame(Lat = rep(NA,length(urls_type2)), Lon = rep(NA,length(urls_type2)))
+
+for (i in 1:length(urls_type2)) {
+  rDr$navigate(urls_type2[i])
+  Sys.sleep(10)
+  text &lt;- rDr$getCurrentUrl()
+  type2.1 &lt;-regexpr(text =text, pattern =&#39;(?&lt;=@)[0-9][0-9].[0-9]+,-?[0-9][0-9].[0-9]+&#39;, perl = TRUE)
+  captured_text &lt;- regmatches(text, m=type2.1)
+  splitted &lt;- stringr::str_split(captured_text,pattern = &quot;,&quot;,simplify = TRUE)
+  cordn2_df[i,1] &lt;- splitted[1,1]
+  cordn2_df[i,2] &lt;- splitted[1,2]
+}</code></pre>
+<p>أخيرا ندمج جميع الأحداثيات التي قمنا بستخراجها معا.</p>
+<p>لنقم الآن بتصوير تلك الاحداثيات. اود ان انبه انني سوف اقوم بدمج تلك الأحداثيات بشكل يحافظ على خصوصية الأعضاء كذلك.</p>
+<pre class="r"><code>library(&quot;leaflet&quot;)
+
+leaflet(data = cordn, options = providerTileOptions(zoomControl = FALSE,
+                                                    minZoom = 8,
+                                                    maxZoom = 8,
+                                                    dragging = FALSE))  %&gt;% 
+  addTiles() %&gt;% 
+  addMarkers(clusterOptions = markerClusterOptions(),lat=~Lat, lng = ~Lon) %&gt;% 
+    setView( lng = 49.950097
+           , lat = 26.255197
+           , zoom =8 ) %&gt;%
+  setMaxBounds( lng1 = 49.750097
+                , lat1 = 26.655197
+                , lng2 = 50.30000
+                , lat2 = 26.855197 )</code></pre>
+<div id="htmlwidget-1" style="width:672px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"options":{"errorTileUrl":"","noWrap":false,"detectRetina":false,"zoomControl":false,"minZoom":8,"maxZoom":8,"dragging":false},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addMarkers","args":[[26.56749,26.514299,26.569941,26.378014,26.575274,26.556448,26.556355,26.564108,26.582544,26.564075,26.578648,26.649536,26.522455,26.572411,26.434126,26.472054,26.557556,30.086767,26.537708,26.56616,26.567497,26.248337,28.433773,26.568422,26.548735,26.209831,26.347235,26.572672,26.549567,26.558367,26.374792,26.7236438,26.568222,26.5673486,26.573534,26.4001566,26.5578997,26.574104,26.574104,26.574104,26.5260087,26.548271,26.552502,26.5594,26.5626944,26.567598,26.567598,26.537431,37.0625,37.0625,26.560842,26.55905,26.3237535,26.6507003,26.476261,24.7431168,26.5577732,26.573534,26.564887,26.5673486,26.5673486,26.5673486,26.5673486,26.5673486,26.5673486,26.5673486,26.5673486,26.5628424,26.5628424,26.5628424,26.5628424,26.5628424,24.7431168,26.5628424,26.3311013,26.64302,26.4541287,26.2865698,26.4534335,26.5868146,26.3236595,26.3326462,26.5456972,26.537245,26.537245,26.5673486,26.5673486,26.5784563,26.5784563,26.55968,24.4504227,26.54093,26.54093,26.4523493,26.520688,26.5538112,26.56297,26.5638417,26.5621556,26.401488,26.484076,24.7431168,26.469142,26.257277,26.5856501,26.4435239,26.566626,26.5758129,26.3766064,26.4030951,26.4840067,26.70165,37.0625,26.5750315,26.3003692,26.2994282,26.5521759,26.5308508,26.5308508,26.5308508,26.5521739,26.3002679,26.4573403,26.2854584,26.279467,26.5577196,26.5658333,25.4002683,26.5313531,26.5830743,26.2537898,26.5821844,26.41752],[50.03524,49.985298,50.052109,50.088558,50.016232,50.021027,50.020973,50.007416,50.050507,50.022285,50.018093,49.979744,49.997196,50.080505,50.128292,50.059326,49.993073,31.303276,49.957817,49.970314,50.035404,50.585911,49.673378,50.036423,50.011559,50.20454,50.144787,50.041077,50.0006163,50.0018613,50.1762163,50.0655395,50.0329891,50.0328072,50.0618524,50.1459553,49.9963909,50.0069393,50.0069393,50.0069393,50.0013314,50.0009613,50.0110403,50.0440703,50.0076195,50.0350523,50.0350523,50.0284913,-95.677068,-95.677068,50.0120263,49.9935007,50.136044,49.9559767,50.1164673,46.7009536,49.9431924,50.0618524,50.0058193,50.0328072,50.0328072,50.0328072,50.0328072,50.0328072,50.0328072,50.0328072,50.0328072,50.0027956,50.0027956,50.0027956,50.0027956,50.0027956,46.7009536,50.0027956,50.1296933,49.954148,50.1124801,50.212096,50.0636776,50.0364147,50.1370948,50.1435448,50.0170026,50.0286183,50.0286183,50.0328072,50.0328072,50.0404151,50.0404151,50.0348583,39.6473163,50.0137245,50.0137245,50.0681623,49.9890573,50.0167139,50.0081068,50.0351672,50.0339603,50.0878757,50.0515723,46.7009536,50.0457039,50.1995627,50.0328578,50.1047221,50.0684603,50.0827847,50.0583454,50.1459794,50.0514566,50.0837728,-95.677068,50.0132114,50.179179,50.1722403,50.0130266,49.9598172,49.9598172,49.9598172,50.0095447,50.1791746,50.0785106,50.1885846,50.2165985,50.0011202,50.015522,49.5390071,50.0268298,50.0116754,49.9675295,49.9748259,50.1132788],null,null,null,{"interactive":true,"draggable":false,"keyboard":true,"title":"","alt":"","zIndexOffset":0,"opacity":1,"riseOnHover":false,"riseOffset":250},null,null,{"showCoverageOnHover":true,"zoomToBoundsOnClick":true,"spiderfyOnMaxZoom":true,"removeOutsideVisibleBounds":true,"spiderLegPolylineOptions":{"weight":1.5,"color":"#222","opacity":0.5},"freezeAtZoom":false},null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"setMaxBounds","args":[26.655197,49.750097,26.855197,50.3]}],"limits":{"lat":[24.4504227,37.0625],"lng":[-95.677068,50.585911]},"setView":[[26.255197,49.950097],8,[]]},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="ختام" class="section level3">
+<h3>ختام</h3>
+<p>هدفي من هذه التدوينة هو تسليط الضوء على كمية البيانات التي نصنعها بشكل يومي دون ان نشعر. لقد تطرقنا هنا لبيانات برنامج واحد ومجموعة واحدة وبرغم من ذلك استطعنا التعرف عن كثب عن الجدول اليومي للأعضاء والمواضيع التي يتحدثون عنها كذلك الأماكن المفضلة لهم. هذا الأمر يدعو فعلا للتأمل حول ما نقوم بمشاركته ونشره على منصات التواصل الأجتماعي.</p>
+</div>

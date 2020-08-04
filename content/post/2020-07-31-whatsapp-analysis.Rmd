@@ -1,0 +1,439 @@
+---
+title: تحليل محادثات الواتس
+author: Hussain
+date: '2020-07-31'
+slug: whatsapp-analysis
+categories: []
+tags:
+  - حزم R
+  - مبتدئين
+---
+
+
+
+### مقدمة 
+
+في ظل الظروف الحالية (وباء فايروس كورونا) وتحت واقع الحجر المنزلي,اصبح معظم التواصل مع العائلة والأصدقاء على منصات برامج التواصل الأجتماعي مثل الواتس والإنستقرام وتويتر وغيرها. هذا التغير في السلوك بلا شك قد ادى إلى صنع كمية اكبر من البيانات لتلك المنصات. وكشخص يحب البيانات, تولدت لدي فكرة تحليل بعض تلك البيانات بنفسي لعلي اكتشف شيء عن نفسي او عن اصدقائي. 
+
+### سبب اختيار بيانات برنامج الواتس
+
+برنامج الواتس للمحادثات الفورية اصبح الوسيلة الشبه معتمدة لشريحة كبيرة من الناس في التواصل الإجتماعي خصوصا في منطقة الشرق الأوسط. ليس هذا فحسب بل بدأت كثير من الشركات والمؤسسات بإعتماد حساب رسمي لها على هذا البرنامج للتواصل المباشر مع عملاءها وتقديم الدعم الفوري لهم. 
+
+بالإضافة إلى ذلك,الأمر الذي دفعني لإختيار بيانات برنامج الواتس هو جاهزية استخراج بيانات المحادثات من أي مجموعة بسهولة. الأمر الآخر هو ان لا استخدم البرامج الأخرى (الإنستقرام, السنابشات,...) بكثافة وبالتالي لن يكون هناك كمية بيانات وافرة للتحليل. 
+
+
+
+### اسئلة التحليل 
+
+قبل أن نشرع بخطوة التحليل, علينا اولا ان نضع اسئلة تحدد الهدف والغاية من التحليل. لذلك سوف ابدأ بهذه الأسئلة ولعل البيانات ترشدنا إلى المزيد خلال عملية التحليل. 
+
+1- هل هناك اختلاف مستوى نشاط مجموعة اصدقاء (الدفعة 2005-2006) خلال الفترة الحالية مقارنة بالاوقات السابقة. 
+
+2- من هم اكثر الأعضاء نشاطا؟
+
+- بالنسبة إلى عدد الرسائل.
+
+- بالنسبة إلى متوسط عدد الأحرف بالرسالة الواحدة. 
+
+3- ما هي اكثر الإيموجيز استخداماً بشكل عام وبشكل خاص؟
+
+4- ما هي المفردات الأكثر شيوعًا في المحادثات؟
+
+5- ما هي الأماكن التي نقوم بمشاركتها في المجموعة؟
+
+
+### إستخراج بيانات المحادثات 
+
+بالإمكان استخراج تاريخ المحادثات لأي مجموعة عن طريق الخطوات التالية 
+
+1- اختر المجموعة التي تريد ثم اضغط على اسم المجموعة في الأعلى 
+
+2- اضغط على "Export Chat". اختر "without media" 
+
+- سيتم استخراج تاريخ المحادثات في ملف مضغوط
+	
+3- اختر طريقة الإرسال.  _أنصح بإستخدام استخدم الإيميل الشخصي_ 
+
+
+### قراءة ومعالجة البيانات
+
+عندما بدأت العمل على هذه التدوينة كنت بصدد كتابة كود (من الصفر) يقوم بقراءة كل رسالة واستخراج اسم المرسل والتاريخ وكذلك النص نفسه. لكن ثقتي بمجتمع لغة R دفعتني إلى البحث اولا عن حزمة تقوم بذلك عوضا عن إعادة اختراع العجلة كما يقولون. انا سعيد بأن اخبرك أن مجتمع R لم يخيب ظني.
+
+لقد وجدت هذه الحزمة `rwhatsapp` والتي لا تقوم بإستخراج المعلومات التي كنت اريدها فحسب بل ايضا تستخرج الأيموجيز من كل رسالة. هذا الأمر سهل علي الإجابة على السؤال الثالث. 
+
+اولا سوف اقوم بإرفاق مجموعة من الحزم التي سأستخدمها في التحليل. ستجد وصف مختصر بجانب كل حزمة
+
+```{r loading-libraries, message=FALSE}
+library("rwhatsapp") # حزمة خاصة لقراءة ومعالجة بيانات المحادثات على الواتس
+library("ggplot2") # حزمة لتمثيل البيانات 
+library("dplyr") # حزمة لمعالجة البيانات
+library("forcats") # حزمة للتعامل مع البيانات الغير كمية 
+library("lubridate") # حزمة للتعامل مع بيانات الوقت والتاريخ
+library("tidyr") # حزمة لمعالجة البيانات 
+library("tidytext") # حزمة لتحليل البيانات النصية
+library("magrittr") # حزمة لصنع الـ pipes
+library("stringr") # حزمة للتعامل مع البيانات النصية
+library("stopwords") # حزمة تحويل على قائمة بالمفردات التي لا معنى لها
+```
+
+
+*ملاحظة* : في الخطوات القادمة سوف اقوم ببعض العمليات على البيانات للحفاظ على خصوصية الأعضاء
+
+نبدأ بقراءة البيانات ومعاينتها (_قد تستغرق هذه العملية وقت طويل حسب حجم الملف_)
+
+```{r reading-data, cache=TRUE,message=FALSE,warning=FALSE}
+df <- rwa_read("~/Documents/ArabianAnalyst/CPC.txt", verbose = TRUE)
+#This step is to annonomize authors and source to protect privacy 
+set.seed(1010)
+df1 <- df %>% mutate(author = fct_anon(author)) %>% select(-source)
+str( df1 %>%
+       mutate(text = openssl::sha256(text)),
+     max.level = 1,
+     vec.len=4)
+```
+
+
+في البيانات اعلاه نجد أن لدينا 5 متغيرات و 171 ألف رسالة. تعود هذه البيانات إلى اكثر من اربع سنوات تقريبا. نلاحظ ايضا ان هناك اكثر من 113 عضو خلال تلك نالفترة. هذا بالطبع لا يعني ان هذا العدد نفس عدد الأعضاء الحالي.
+
+###### هل هناك اختلاف في مستوى نشاط المجموعة خلال الفترة الحالية مقارنة بالاوقات السابقة؟
+
+```{r group-activity,message=FALSE,warning=FALSE}
+# Feature Engineering
+df1 <- df1 %>% 
+  mutate(day = date(time)) %>% 
+  mutate(day_num = yday(time)) %>% 
+  mutate(weekdays = weekdays(time) ) %>% 
+  mutate(hour = hour(time)) %>% 
+  mutate(month = month(time, label = TRUE)) %>%
+  mutate(year = year(time)) 
+
+## Group Activity 
+df1 %>% 
+  count(day) %>% 
+  ggplot(aes(x = day, y= n)) +
+  geom_bar(stat = "identity") +
+  ylab("# messages") + xlab("Date") +
+  ggtitle("Group Activity since April 2016") + theme_classic()
+
+```
+
+
+نلاحظ ان المجموعة نشطة بشكل عام لكن ازدادة نشاطا مع بداية جائحة COVID-19. أيضا نلاحظ ان هناك انقطاع في نهاية سنة 2017  وهذا يعود لسبب شخصي حيث كنت مسافرا في تلك الفترة ومعها تغير رقم الهاتف المحمول وبالتالي لم يتم ارشفة هذه الفترة. 
+
+يمكن مقارنة نشاط المجموعة عن كثب بعتماد رقم اليوم السنوي كوحدة القياس
+
+التصوير البياني ادناه يؤكد لنا ازدياد نشاط المجموعة في سنة 2020 بالمقارنة مع السنوات السابقة. كما نلاحظ تصاعد في عدد الرسائل فوق خط 600 رسالة باليوم لبعض الأيام. بعد معاينة تلك الأيام توضح لي اسباب هذا التصاعد كما هي مبينة. 
+
+```{r ,message=FALSE,warning=FALSE}
+
+# Summarized data for number of messeges a day
+df_summarized <-  df1 %>% 
+  filter(year != "NA") %>% 
+  mutate( year = as.factor(year)) %>% 
+  group_by(year) %>% 
+  count(day_num)
+
+
+# Annotation data frame for ploting
+d_note  <- tribble(
+  ~date, ~text,
+  "2020-03-08", "حجر مدينة القطيف",
+  "2020-03-29", "تفاقم الجائحة في امريكا",
+  "2020-05-24", "دخول شهر رمضان",
+)
+
+d_note <- d_note %>% 
+  mutate(day = date(date)) %>% 
+  mutate(day_num = yday(day)) %>% 
+  mutate(year = as.factor(year(day))) %>% 
+  inner_join(df_summarized, by = c("year", "day_num"))
+
+
+
+ g1 <- df_summarized %>% 
+  ggplot(aes(x = day_num, y= n,group = year, color = year,alpha =year)) +
+  geom_path(stat = "identity") +
+  labs(y ="# messages" , x = "# Day of 365",alpha = "Year", color = "Year") +
+  scale_alpha_manual(values = c(rep(0.2,4), 1)) +
+  ggtitle("Group Activity since April 2016") +
+  geom_text(d_note, mapping = aes(x = day_num, y = n , label = text), show.legend = FALSE) + 
+  ggtitle("# Messeges spikes in 2020") +
+  theme_classic()
+ 
+ g1
+```
+
+
+####  من هم اكثر الأعضاء نشاطا؟
+
+للإجابة على هذا السؤال سوف نقوم بتمثيل البيانات حسب عدد الرسائل المرسلة . كذلك سوف نقوم بالإشارة إلى متوسط عدد الأحرف في الرسالة. 
+
+```{r,message=FALSE,warning=FALSE}
+
+df_usr_summarized <- df1 %>%
+    filter(author != "NA") %>% 
+    mutate(author = fct_rev(fct_infreq(fct_lump_min(author, min = 20)))) %>% 
+    count(author) %>% 
+    filter(n > 600)
+
+df_usr_mean<- df1 %>%
+  filter(author != "NA") %>% 
+  filter(!str_detect(text, c("media omitted",
+                             "image omitted",
+                             "audio omitted",
+                             "video omitted",
+                             "sticker omitted"))) %>% 
+  mutate(author = fct_rev(fct_infreq(fct_lump_min(author, min = 20)))) %>% 
+  mutate(msg_length = nchar(text)) %>% 
+  group_by(author) %>% 
+  summarise("avr_msg_lngth" = round(mean(msg_length),0), .groups = "keep") %>%
+  right_join(df_usr_summarized,by = "author")
+
+
+g2 <- df_usr_summarized %>%
+  ggplot(aes(x = reorder(author, n), y = n, fill = ifelse(n>mean(n), "amber", "lightblue"))) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  geom_text(mapping = aes(y = n, label = n), size = 2.5, nudge_y = 620) +
+  scale_y_discrete(expand = expansion(add = c(0,3000))) +
+  scale_x_discrete(expand =c(0,0))+
+  coord_flip() + 
+  labs(title ="Most Active Members in term of # of Messages",
+       subtitle = paste0("Above average is colored in red ( average = 1839)"),
+       x ="", y = "") +
+  theme_classic() + 
+  theme(axis.text.y = element_text(size = 9),
+        axis.line = element_blank(), 
+        axis.ticks = element_blank())
+g2 +  
+  geom_col(data = df_usr_mean,
+           mapping = aes(group = author,x = reorder(author,n), y =avr_msg_lngth*60),
+           alpha = 0.5,
+           fill = "gray",
+           show.legend = FALSE)  
+
+```
+
+الرسم البياني اعلاه يوضح اكثر الأعضاء نشاطا من حيث عدد الرسائل. يبدو ان رقم 099 هو اكثر الأعضاء سوالف فالفارق كبير بينه وبين المركز الثاني. إذا كانت المشاركات بهذا الشكل فهذا يبين أن لعله من الأفضل انشاء مجموعة منفصلة للأعضاء المعلمين بالأحمر. 
+
+من جانب آخر, نجد ان بعض الاعضاء اقل نشاطا لكنهم اطول محتوى. الأعمدة الرمادية تشير إلى مقارنة المتوسط الحسابي لعدد الأحرف في الرسالة الواحدة لكل من الأعضاء.  بشكل عام الأعضاء الأكثر نشاط عادة ما تكون رسائلهم اقصر محتوى. 
+
+
+####  هل بالإمكان معرفة جدول الأعضاء اليومي من خلال رسائلهم على الواتس؟
+
+طرأ على بالي هذه السؤال خلال عملية التحليل . السبب هو أنني اعتقد أن معظم الأعضاء يستخدمون برنامج الواتس على مدار اليوم ماعدا النوم. لنرى إن كنت محقاً
+
+```{r,message=FALSE,warning=FALSE}
+  ## general activity for the top 10  active members during the weekdays   
+  top_15 <- df1 %>%
+    mutate(day = date(time)) %>%
+    filter(author != "NA") %>% 
+    mutate(author = fct_rev(fct_infreq(fct_lump_min(author, min = 20)))) %>% 
+    count(author) %>% arrange(desc(n)) %>% top_n(15) %>% select(author) 
+  
+  df1 %>% 
+    filter(author %in% top_15$author) %>% 
+    group_by(author , hour) %>% 
+    summarise(n = n()) %>% 
+    ggplot() +
+    geom_boxplot(aes(y = hour, x = n, group = hour), outlier.shape = NA)+
+   # scale_x_discrete(limits = c(0,30)) + 
+    coord_flip()+
+    facet_wrap(author~., scales = "free_y" ) + 
+    labs(title = "Pattern of activity top 15  active group members around the 24 clock", 
+         x = "", y = "") + 
+    theme_classic() + 
+    theme(axis.text.y = element_blank(), 
+          axis.ticks.y = element_blank(), 
+          axis.line.y = element_blank())
+
+```
+
+
+الرسم البيانات اعلاه يؤكد ما كنت اتوقعه حيث أن مجموعة الأعضاء الأكثر نشاطُا عادة ما يكونو نشطين خلال اليوم بأكمله. النمط بصفة عامة : يبدأ نشاط الأعضاء من الصباح (وقت الدوام) ويزداد حتى ذروته مع فترة استراحة الغداء ثم يستمر حتى وقت العشاء. الملفت أن العضو رقم 106 يمتنع بالغالب من استخدام الواتس خلال اوقات الدوام ولكنه يعوض غيابه بعد نهاية الدوام.
+
+
+#### ما هي اكثر الإيموجيز استخداماً بشكل عام وبشكل خاص؟
+
+هذا السؤال من السهل الإجابة عليه من خلال الرسم البياني التالي 
+
+```{r}
+df1 %>% 
+  unnest(emoji) %>%
+  count(emoji, sort = TRUE) %>%
+  top_n(n = 14, n) %>% 
+ 
+  ggplot(aes(x = reorder(emoji, n), y = n, fill = emoji)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  labs(title = "Most often used emojis", x = "", y ="") +
+  scale_y_discrete(expand = c(0,0))+
+  theme_classic()+
+  theme(axis.ticks.y = element_blank(), 
+        axis.text.y = element_text(size = 15), 
+        axis.line = element_blank())
+    
+```
+
+ وهذه معظم الأيموجيز المستخدمة بالنسبة لأعلى خمس اعضاء نشطين بالمجموعة  
+
+```{r}
+  selected_people <- top_15$author[1:5]
+    df1 %>% filter(author %in% selected_people) %>% 
+    unnest(emoji) %>%
+    count(author, emoji, sort = TRUE) %>%
+    group_by(author) %>%
+    top_n(n = 6, n) %>% 
+    ggplot(aes(x = reorder(emoji, n), y = n, fill = author)) +
+    geom_col(show.legend = FALSE) +
+    coord_flip() + 
+      facet_wrap(~author, ncol = 2, scales = "free_y") +
+      labs(title ="Most often used emojis", x = "", y = "") +
+      theme(axis.text.y = element_text(size = 10),
+            axis.ticks.y = element_blank())
+    
+    
+```
+
+#### ما هي المفردات الأكثر شيوعًا في المحادثات؟
+
+من الطرق المستخدمة في تحليل النصوص هو استخدام الـ tf-idf . هذه الطريقة الشائعة تساعد على استخراج المفردات التي تميز مستند من غيره. في هذا المثال, سوف نحاول تمييز مفردات الأعضاء من غيرهم. 
+
+```{r}
+to_remove <- c(stopwords(language = "ar", source = "misc"),stopwords(language = "en"), "media", "omitted",  "image",  "sticker",  "video",  "audio", "الله",
+"يا", "بس", "مو","الي", "ها", "أبو", "https", "ويش", "انت", "لو", "يعني", 
+"message", "deleted", "أن","أنا", "شي","هدي","هذي","عليك", "twitter.com", 
+"علشان", "ليش", "زي","لك", "احنا", "يقول", "حق", "ترى", "الحين", "انا", 
+"هل", "طيب","الي", "حد", "status","d8","s","بو", "دا", "وين", "d9", "دي","يبغى", 
+"أحد", "إذا", "نص", "صار", "بالله", "عنده", "أو","فيك", "بعدين", "شوي", "منهو", 
+"ليي", "اللي","أبو", "متا","هاذي","حتا" , "مادري","تبغا","هذولا","يبغا","مب",
+"يبغي","خي","انزين","ويشي","ماادري","ماشاءالله","شاءالله","كده","شدي","هههه",
+"ههه","والا","ياللا","كيدا","واللهي","اليهم","ويه","اله",
+"25d8","25d9")
+                   
+    
+    df1 %>% 
+      filter(author %in% selected_people) %>% 
+      unnest_tokens(input = text,
+                    output = word) %>%
+      filter(!word %in% to_remove) %>%
+      count(author, word, sort = TRUE) %>%
+      bind_tf_idf(term = word, document = author, n = n) %>%
+     group_by(author) %>%
+      top_n(n = 6, tf_idf) %>%
+      ggplot(aes(x = reorder_within(
+        # This step is encrypt the words to protect the privacy of members
+        substring(openssl::sha1(word),1,5),
+        n, author), y = n, fill = author)) +
+      geom_col(show.legend = FALSE) +
+      ylab("") +
+      xlab("") +
+      coord_flip() +
+      facet_wrap(~author, scales = "free_y") +
+      scale_x_reordered() +
+      ggtitle("Important words using tf–idf by author")  
+
+```
+
+يؤسفني أنه لن نستطيع تحليل نتائج هذا الرسم البياني لأنني قمت بتشفير الكلمات الشائعة حرصا على خصوصية اعضاء المجموعة لكن هذا لا يعني ان جهودنا ذهبت سدى. بإمكانك تجريب الكود بعد إزالة جزئية التشفير والإطلاع على النتائج الخاصة بك. 
+
+### ما هي الأماكن التي نقوم بمشاركتها في المجموعة؟
+
+خاصية مشاركة المكان على برنامج الواتس هي احد اهم واكثر الخصائص التي استخدمها بشكل يومي. لذلك اجده من الشيق أن اتمكن من تمثيل كل ما تم مشاركته خلال الأربع سنوات الماضية في هذه المجموعة. بعد الإطلاع على عينة من المحادثات اكتشفت ان استخراجها لن يكون عملية سهلة فالأماكن المتشاركة في الواتس تنقسم إلى نوعين .  
+
+- النوع الأول : يكون فيها نص الرسالة متضمن الأحداثيات
+
+- النوع الثاني: يكون فيها نص الرسالة متضمن لرابط مختصر لخرائط جوجل
+
+النوع الأول سهل جدا استخراج الأحداثيات عن طريق استخدام Regular Expression . لكن النوع الثاني سوف يتطلب منا أن نمدد الرابط اولا ثم يقوم موقع خرائط جوجل بمعالجته وتزويد الأحداثيات في الرابط الجديد. لا تقلق هناك حيلة بإمكاننا استخدامها لفعل ذلك عن طريق تلقائية عملية التصفح وإرسال الروابط وتمديدها ومعالجتها. سوف يستغرق الأمر لكنه يستحق العناء. 
+
+```{r}
+# Extracting Coordinates from Type I 
+type1 <-regexpr(text = df1$text,pattern ='(?<=q=)[0-9][0-9].[0-9]+,[0-9][0-9].[0-9]+' ,perl = TRUE)
+urls_type1 <- regmatches(df1$text, m=type1)
+cordn1_df <- data.frame(stringr::str_split(urls_type1,pattern = ",",simplify = TRUE))
+cordn1_df$X1 <- as.numeric(cordn1_df$X1)
+cordn1_df$X2 <- as.numeric(cordn1_df$X2)
+colnames(cordn1_df) <- c("Lat", "Lon")
+```
+
+لقد نجحنا بإستخراج الأحداثيات من النوع الأول بكل سهولة وبقي لنا النوع الثاني.
+
+أولا سوف نقوم بتشغيل سيرفر خاص بمتصفح فايرفكس لكي نستطيع تلقائية التصفح. 
+
+```{bash, eval=FALSE}
+# pulling an image from selenium to drive firefox 
+docker pull selenium/standalone-firefox:2.53.0
+
+# running the container 
+docker run --rm -d -p 4445:4444 selenium/standalone-firefox:2.53.0
+```
+
+هنا نربط الحزمة بالسيرفر الذي قمنا بتشغيله 
+
+```{r, eval=FALSE}
+library("RSelenium")
+rDr <- remoteDriver(
+  port = 4445L
+)
+rDr$open()
+
+```
+
+هنا نقوم بتصف الروابط وتمديدها حتى نستخرج الإحداثيات
+
+```{r, eval=FALSE}
+type2 <- regexpr(text =df1$text, pattern ='https://goo.gl/maps/[0-9a-zA-Z]+', perl = TRUE)
+urls_type2 <- regmatches(df1$text, m=type2)
+
+cordn2_df <- data.frame(Lat = rep(NA,length(urls_type2)), Lon = rep(NA,length(urls_type2)))
+
+for (i in 1:length(urls_type2)) {
+  rDr$navigate(urls_type2[i])
+  Sys.sleep(10)
+  text <- rDr$getCurrentUrl()
+  type2.1 <-regexpr(text =text, pattern ='(?<=@)[0-9][0-9].[0-9]+,-?[0-9][0-9].[0-9]+', perl = TRUE)
+  captured_text <- regmatches(text, m=type2.1)
+  splitted <- stringr::str_split(captured_text,pattern = ",",simplify = TRUE)
+  cordn2_df[i,1] <- splitted[1,1]
+  cordn2_df[i,2] <- splitted[1,2]
+}
+
+
+```
+```{r,echo=FALSE}
+cordn2_df <- read.csv("~/Desktop/cordn.csv",check.names = FALSE) %>% select(Lat,Lon)
+```
+
+أخيرا ندمج جميع الأحداثيات التي قمنا بستخراجها معا. 
+
+```{r, echo=FALSE}
+cordn2_df$Lat <- as.numeric(cordn2_df$Lat)
+cordn2_df$Lon <- as.numeric(cordn2_df$Lon)
+cordn <- rbind(cordn1_df,cordn2_df)
+```
+
+لنقم الآن بتصوير تلك الاحداثيات. اود ان انبه انني سوف اقوم بدمج تلك الأحداثيات بشكل يحافظ على خصوصية الأعضاء كذلك. 
+
+```{r, message=FALSE }
+library("leaflet")
+
+leaflet(data = cordn, options = providerTileOptions(zoomControl = FALSE,
+                                                    minZoom = 8,
+                                                    maxZoom = 8,
+                                                    dragging = FALSE))  %>% 
+  addTiles() %>% 
+  addMarkers(clusterOptions = markerClusterOptions(),lat=~Lat, lng = ~Lon) %>% 
+    setView( lng = 49.950097
+           , lat = 26.255197
+           , zoom =8 ) %>%
+  setMaxBounds( lng1 = 49.750097
+                , lat1 = 26.655197
+                , lng2 = 50.30000
+                , lat2 = 26.855197 )
+
+```
+
+### ختام
+
+هدفي من هذه التدوينة هو تسليط الضوء على كمية البيانات التي نصنعها بشكل يومي دون ان نشعر. لقد تطرقنا هنا لبيانات برنامج واحد ومجموعة واحدة وبرغم من ذلك استطعنا التعرف عن كثب عن الجدول اليومي للأعضاء والمواضيع التي يتحدثون عنها كذلك الأماكن المفضلة لهم. هذا الأمر يدعو فعلا للتأمل حول ما نقوم بمشاركته ونشره على منصات التواصل الأجتماعي. 
+
