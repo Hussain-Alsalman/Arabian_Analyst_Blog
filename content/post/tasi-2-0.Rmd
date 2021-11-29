@@ -1,0 +1,122 @@
+---
+title: 'حزمة tasi 2.0 `r emo::ji("package")` '
+author: 'Hussain'
+date: '2021-11-29'
+slug: "tasi-2-0"
+categories: []
+tags:
+  - حزم-r
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE) 
+```
+
+
+حزمة tasi هي حزمة قمت بتطويرها لجلب بيانات السوق السعودي من الأنترنت. هدفها تسهيل وتبسيط سير عمل تحليل بيانات السوق وتطوير المؤشرات والتحليلات الفنية. الأصدار الأول من هذه الحزمة كان مقتصرا على جلب الأسعار اليومية لأسهم الشركات. لكن مع مرور الوقت قررت أن اوسع أمكانيات هذه الحزمة إلى جلب القوائم المالية ايضا وتنسيق البيانات بصيغة ومعيار يتناسب مع الحزم المتخصص في تحليل التسلسلات الزمنية. 
+
+
+### ما الجديد في الحزمة 
+
+ 
+- #### جلب بيانات مؤشرات القطاعات 
+الآن بإمكانك جلب ليس اسعار الؤشر العام فقط بل مؤشرات القطاعات ايضا. هناك  حوالي  اكثر من  عشرين دالة لجلب مؤشرات القطاعات. جميع الدوال تبدأ بـ `get_` ثم اسمع القطاع. كل ما عليك فعله هو تحديد المدة الزمنية فقط. إليك هذا المثال 
+
+```{r, industry_index}
+# Install the package if you have not 
+# devtools::install_github("Hussain-Alsalman/tasi")
+library("tasi")
+library("magrittr")
+
+get_capitals(start_date = "2020-01-01", end_date = "2021-11-27") %>% 
+  head()
+
+```
+ 
+
+- ####  تعديل سعر السهم ليتضمن الارباح الموزعة
+من العمليات الشائعة في تحليل الأسهم هو حساب عوائد السهم خلال فترة زمنية معينة (معدل التغير في سعر السهم). لكن ذلك لا يعكس العائد الكلي للسهم لأن معظم الشركات تقوم بتوزيع الأرباح للمساهمين مما يشكل عائد إضافي للمستثمر. لذلك قمت بتطوير دالة تقوم بتعديل سعر السهم ليعكس ايضا الارباح الموزعة. إليك هذا المثال 
+
+```{r, adjusted_prices, message=FALSE}
+library("tasi")
+comp_symbol <- 1180 #NCB Bank. 
+comp <- get_company_records(start_date = "2020-01-01",
+                    end_date = "2021-11-27",
+                    company_symbol = comp_symbol
+                    )
+comp %>% 
+  df_to_xts() %>% # converting it to xts format 
+  head()
+
+comp %>% add_adj_price(comp_symbol) %>% head()
+
+```
+
+- #### جلب بيانات الأسهم على طريقة  `quantmod::getSymbols`
+من الحزم آر الشهيرة جدا في عالم تحليل سوق المال هي `quantmod`. هذه الحزمة توفر الكثير من الأدوات التحليلية الرائعة لكنها لا تعمل بشكل سلس مع بيانات الأسواق الغير امريكية. لذلك قمت بتطوير دالة مماثلة لـ `getSymbols()` للسوق السعودي. إليك هذا المثال 
+
+```{r, message=FALSE}
+library("quantmod")
+library("tasi")
+tasi::getSymbols(start_date = "2021-01-01",
+                 end_date = "2021-11-27",
+                 symbol_vector = c(2222,1180,1010))
+
+#make sure to prefix the company symbol num by "T" 
+chart_Series(T2222)
+```
+
+
+- #### جلب القوائم المالية 
+لعل هذه الميزة هي الأقوى بين المزايا في الحزمة الجديد. هناك الكثير من المعدٌلات والنِسَب المالية التي يحتاج لحسابها المستثمر ليحدد مدى كفاءة تشغيل الشركة أو مدى ربحيتها او معدل تغير سبل التمويل لديها. كل هذه المعلومات وغيرها يمكن العثور عليها في القوائم المالية لكن ذلك يتطلب الكثير من البحث اليدوي. لذلك قمت بتطوير عدة دوال تبسط هذه العملية. إليك هذا المثال 
+
+```{r}
+library("tasi")
+
+get_income_statement(company_symbol = 1010,
+                    period_type = "y" # "q" for quarterly and "y" for yearly
+                    )
+
+```
+
+
+- #### جلب القوائم المالية الأخرى من صيغة XBRL 
+لقد سبق وتحدث بشكل مفصل عن صيغة XBRL الخاصة بالتقارير المالية يمكنك الأطلاع على التدوينة هنا. هذه الصيغة تمكننا من جلب معلومات اضافية من التقارير الربعية والسنوية بالأيضاحات ومعلومات مدققي المحاسبة. إليك هذا المثال
+
+```{r}
+library("tasi")
+# NOTE!!! This function will ask you to choose from available statements if you leave statement_type unfilled. 
+get_statement_xbrl(company_symbol = 2350,
+                   period = "Q1-2021",
+                   statement_type = "StatementOfFinancialPositionCurrentNonCurrent")
+
+```
+
+
+هذه الصيغة تمكننا من  استخراج معلومات معينة وإجراء حسابات متخصصة مثل معدل دوران الأصول asset turnover ratio لقياس مدى كفاءة الشركة في توظيف مواردها. إليك هذا المثال : 
+
+```{r}
+balance_sheet <- get_statement_xbrl(company_symbol = 2350,
+                   period = "Q1-2021",
+                   statement_type = "StatementOfFinancialPositionCurrentNonCurrent") 
+income_statement <- get_statement_xbrl(company_symbol = 2350,
+                   period = "Q1-2021",
+                   statement_type = "StatementOfIncomeNatureOfExpense") 
+colnames(income_statement) <- c("Term", "Q1_2021", "Q1_2020")
+colnames(balance_sheet) <- c("Term", "Q1_2021", "Q1_2020", "FY_2020")
+
+
+sales <- income_statement[stringr::str_detect(string = income_statement$Term,"Sales of goods"),2:3]
+assets <- balance_sheet[stringr::str_detect(string = balance_sheet$Term,"Total assets"),2:3]
+
+sales <- sales %>% gsub(x = .,",","") %>%  as.numeric()
+assets <- assets  %>% gsub(x = .,",","") %>%  as.numeric()
+names(sales) <- c("Q1_2021", "Q1_2020")
+names(assets) <- c("Q1_2021", "Q1_2020")
+
+# Asset turn over is 
+print("Asset Turnover ratio Q/Q")
+unlist(sales)/unlist(assets)
+
+```
+

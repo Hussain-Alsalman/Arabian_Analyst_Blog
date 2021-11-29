@@ -1,0 +1,154 @@
+---
+title: 'حزمة tasi 2.0 📦 '
+author: 'Hussain'
+date: '2021-11-29'
+slug: "tasi-2-0"
+categories: []
+tags:
+  - حزم-r
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<p>حزمة tasi هي حزمة قمت بتطويرها لجلب بيانات السوق السعودي من الأنترنت. هدفها تسهيل وتبسيط سير عمل تحليل بيانات السوق وتطوير المؤشرات والتحليلات الفنية. الأصدار الأول من هذه الحزمة كان مقتصرا على جلب الأسعار اليومية لأسهم الشركات. لكن مع مرور الوقت قررت أن اوسع أمكانيات هذه الحزمة إلى جلب القوائم المالية ايضا وتنسيق البيانات بصيغة ومعيار يتناسب مع الحزم المتخصص في تحليل التسلسلات الزمنية.</p>
+<div id="ما-الجديد-في-الحزمة" class="section level3">
+<h3>ما الجديد في الحزمة</h3>
+<ul>
+<li><h4 id="جلب-بيانات-مؤشرات-القطاعات">جلب بيانات مؤشرات القطاعات</h4>
+الآن بإمكانك جلب ليس اسعار الؤشر العام فقط بل مؤشرات القطاعات ايضا. هناك حوالي اكثر من عشرين دالة لجلب مؤشرات القطاعات. جميع الدوال تبدأ بـ <code>get_</code> ثم اسمع القطاع. كل ما عليك فعله هو تحديد المدة الزمنية فقط. إليك هذا المثال</li>
+</ul>
+<pre class="r"><code># Install the package if you have not 
+# devtools::install_github(&quot;Hussain-Alsalman/tasi&quot;)
+library(&quot;tasi&quot;)
+library(&quot;magrittr&quot;)
+
+get_capitals(start_date = &quot;2020-01-01&quot;, end_date = &quot;2021-11-27&quot;) %&gt;% 
+  head()</code></pre>
+<pre><code>##           date    high    open     low   close totalVolume  totalTurnover
+## 476 2020-01-01 4423.98 4332.37 4371.88 4410.43     4422290  93,012,358.61
+## 475 2020-01-02 4483.10 4410.43 4451.19 4461.49     6559384 116,314,994.75
+## 474 2020-01-05 4444.04 4461.49 4356.14 4373.23     6900081 155,820,965.02
+## 473 2020-01-06 4375.32 4373.23 4274.97 4278.48     6359870 126,953,206.07
+## 472 2020-01-07 4374.45 4278.48 4264.59 4298.68     6229559 141,720,681.00
+## 471 2020-01-08 4362.64 4298.68 4227.44 4296.50     6365297 135,112,493.24
+##     noOfTrades
+## 476       7045
+## 475       7789
+## 474      11095
+## 473      10206
+## 472       9581
+## 471       9872</code></pre>
+<ul>
+<li><h4 id="تعديل-سعر-السهم-ليتضمن-الارباح-الموزعة">تعديل سعر السهم ليتضمن الارباح الموزعة</h4>
+من العمليات الشائعة في تحليل الأسهم هو حساب عوائد السهم خلال فترة زمنية معينة (معدل التغير في سعر السهم). لكن ذلك لا يعكس العائد الكلي للسهم لأن معظم الشركات تقوم بتوزيع الأرباح للمساهمين مما يشكل عائد إضافي للمستثمر. لذلك قمت بتطوير دالة تقوم بتعديل سعر السهم ليعكس ايضا الارباح الموزعة. إليك هذا المثال</li>
+</ul>
+<pre class="r"><code>library(&quot;tasi&quot;)
+comp_symbol &lt;- 1180 #NCB Bank. 
+comp &lt;- get_company_records(start_date = &quot;2020-01-01&quot;,
+                    end_date = &quot;2021-11-27&quot;,
+                    company_symbol = comp_symbol
+                    )
+comp %&gt;% 
+  df_to_xts() %&gt;% # converting it to xts format 
+  head()</code></pre>
+<pre><code>##             Open  High   Low  Volume Close
+## 2020-01-01 49.25 49.25 48.60  361128 48.65
+## 2020-01-02 48.65 48.85 48.25  627781 48.80
+## 2020-01-05 47.20 48.50 47.20  952211 47.40
+## 2020-01-06 47.20 47.45 46.60 2101193 46.90
+## 2020-01-07 47.00 47.25 46.45 1300968 46.50
+## 2020-01-08 46.20 46.30 45.80 1306755 46.30</code></pre>
+<pre class="r"><code>comp %&gt;% add_adj_price(comp_symbol) %&gt;% head()</code></pre>
+<pre><code>##             Open  High   Low  Volume Close Adjusted
+## 2020-01-01 49.25 49.25 48.60  361128 48.65 45.85164
+## 2020-01-02 48.65 48.85 48.25  627781 48.80 45.99302
+## 2020-01-05 47.20 48.50 47.20  952211 47.40 44.67354
+## 2020-01-06 47.20 47.45 46.60 2101193 46.90 44.20230
+## 2020-01-07 47.00 47.25 46.45 1300968 46.50 43.82531
+## 2020-01-08 46.20 46.30 45.80 1306755 46.30 43.63682</code></pre>
+<ul>
+<li><h4 id="جلب-بيانات-الأسهم-على-طريقة-quantmodgetsymbols">جلب بيانات الأسهم على طريقة <code>quantmod::getSymbols</code></h4>
+من الحزم آر الشهيرة جدا في عالم تحليل سوق المال هي <code>quantmod</code>. هذه الحزمة توفر الكثير من الأدوات التحليلية الرائعة لكنها لا تعمل بشكل سلس مع بيانات الأسواق الغير امريكية. لذلك قمت بتطوير دالة مماثلة لـ <code>getSymbols()</code> للسوق السعودي. إليك هذا المثال</li>
+</ul>
+<pre class="r"><code>library(&quot;quantmod&quot;)
+library(&quot;tasi&quot;)
+tasi::getSymbols(start_date = &quot;2021-01-01&quot;,
+                 end_date = &quot;2021-11-27&quot;,
+                 symbol_vector = c(2222,1180,1010))
+
+#make sure to prefix the company symbol num by &quot;T&quot; 
+chart_Series(T2222)</code></pre>
+<p><img src="/post/tasi-2-0_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<ul>
+<li><h4 id="جلب-القوائم-المالية">جلب القوائم المالية</h4>
+لعل هذه الميزة هي الأقوى بين المزايا في الحزمة الجديد. هناك الكثير من المعدٌلات والنِسَب المالية التي يحتاج لحسابها المستثمر ليحدد مدى كفاءة تشغيل الشركة أو مدى ربحيتها او معدل تغير سبل التمويل لديها. كل هذه المعلومات وغيرها يمكن العثور عليها في القوائم المالية لكن ذلك يتطلب الكثير من البحث اليدوي. لذلك قمت بتطوير عدة دوال تبسط هذه العملية. إليك هذا المثال</li>
+</ul>
+<pre class="r"><code>library(&quot;tasi&quot;)
+
+get_income_statement(company_symbol = 1010,
+                    period_type = &quot;y&quot; # &quot;q&quot; for quarterly and &quot;y&quot; for yearly
+                    )</code></pre>
+<pre><code>## # A tibble: 22 × 5
+##    statement_of_income                     Y_2020      Y_2019     Y_2018  Y_2017
+##    &lt;chr&gt;                                    &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;   &lt;dbl&gt;
+##  1 Special Commission Income           9813394000 10371426000 8332365000  7.43e9
+##  2 Special Commission Expenses         1599789000  2534411000 1646601000  1.49e9
+##  3 Net Special Commission Income       8213605000  7837015000 6685764000  5.94e9
+##  4 Fees from Services                  1873555000  2030745000 1711052000  1.51e9
+##  5 Exchange Income                      412614000   342658000  337043000  2.90e8
+##  6 Trading Income                       218297000   132806000    2717000  2.18e7
+##  7 Realized Gains on Investments, net   305068000   255486000  130385000  2.83e8
+##  8 Dividend Income                      102518000   102866000   57533000  5.08e7
+##  9 Other Operating Income                79464000    15487000   42907000  3.39e7
+## 10 Total Operating Income             11205121000 10717063000 8967401000  8.13e9
+## # … with 12 more rows</code></pre>
+<ul>
+<li><h4 id="جلب-القوائم-المالية-الأخرى-من-صيغة-xbrl">جلب القوائم المالية الأخرى من صيغة XBRL</h4>
+لقد سبق وتحدث بشكل مفصل عن صيغة XBRL الخاصة بالتقارير المالية يمكنك الأطلاع على التدوينة هنا. هذه الصيغة تمكننا من جلب معلومات اضافية من التقارير الربعية والسنوية بالأيضاحات ومعلومات مدققي المحاسبة. إليك هذا المثال</li>
+</ul>
+<pre class="r"><code>library(&quot;tasi&quot;)
+# NOTE!!! This function will ask you to choose from available statements if you leave statement_type unfilled. 
+get_statement_xbrl(company_symbol = 2350,
+                   period = &quot;Q1-2021&quot;,
+                   statement_type = &quot;StatementOfFinancialPositionCurrentNonCurrent&quot;)</code></pre>
+<pre><code>## # A tibble: 47 × 5
+##    `[300200] Statement of financial positi… ``        ``        ``       ``     
+##    &lt;chr&gt;                                    &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt;    &lt;chr&gt;  
+##  1 Start Date                               &quot;2021-01… &quot;2020-01… &quot;2020-0… &quot;Note …
+##  2 End Date                                 &quot;2021-03… &quot;2020-03… &quot;2020-1… &quot;Note …
+##  3 Statement of financial position [abstra… &quot;&quot;        &quot;&quot;        &quot;&quot;       &quot;&quot;     
+##  4 Assets [abstract]                        &quot;&quot;        &quot;&quot;        &quot;&quot;       &quot;&quot;     
+##  5 Current assets [abstract]                &quot;&quot;        &quot;&quot;        &quot;&quot;       &quot;&quot;     
+##  6 Bank balances and cash                   &quot;884,724&quot; &quot;533,923&quot; &quot;564,72… &quot;&quot;     
+##  7 Short-term deposits                      &quot;952,500&quot; &quot;1,282,5… &quot;615,00… &quot;&quot;     
+##  8 Trade accounts receivable                &quot;2,844,8… &quot;2,108,1… &quot;2,643,… &quot;&quot;     
+##  9 Prepayments                              &quot;80,083&quot;  &quot;79,143&quot;  &quot;96,028&quot; &quot;&quot;     
+## 10 Inventories                              &quot;1,319,6… &quot;1,219,8… &quot;1,280,… &quot;&quot;     
+## # … with 37 more rows</code></pre>
+<p>هذه الصيغة تمكننا من استخراج معلومات معينة وإجراء حسابات متخصصة مثل معدل دوران الأصول asset turnover ratio لقياس مدى كفاءة الشركة في توظيف مواردها. إليك هذا المثال :</p>
+<pre class="r"><code>balance_sheet &lt;- get_statement_xbrl(company_symbol = 2350,
+                   period = &quot;Q1-2021&quot;,
+                   statement_type = &quot;StatementOfFinancialPositionCurrentNonCurrent&quot;) 
+income_statement &lt;- get_statement_xbrl(company_symbol = 2350,
+                   period = &quot;Q1-2021&quot;,
+                   statement_type = &quot;StatementOfIncomeNatureOfExpense&quot;) 
+colnames(income_statement) &lt;- c(&quot;Term&quot;, &quot;Q1_2021&quot;, &quot;Q1_2020&quot;)
+colnames(balance_sheet) &lt;- c(&quot;Term&quot;, &quot;Q1_2021&quot;, &quot;Q1_2020&quot;, &quot;FY_2020&quot;)
+
+
+sales &lt;- income_statement[stringr::str_detect(string = income_statement$Term,&quot;Sales of goods&quot;),2:3]
+assets &lt;- balance_sheet[stringr::str_detect(string = balance_sheet$Term,&quot;Total assets&quot;),2:3]
+
+sales &lt;- sales %&gt;% gsub(x = .,&quot;,&quot;,&quot;&quot;) %&gt;%  as.numeric()
+assets &lt;- assets  %&gt;% gsub(x = .,&quot;,&quot;,&quot;&quot;) %&gt;%  as.numeric()
+names(sales) &lt;- c(&quot;Q1_2021&quot;, &quot;Q1_2020&quot;)
+names(assets) &lt;- c(&quot;Q1_2021&quot;, &quot;Q1_2020&quot;)
+
+# Asset turn over is 
+print(&quot;Asset Turnover ratio Q/Q&quot;)</code></pre>
+<pre><code>## [1] &quot;Asset Turnover ratio Q/Q&quot;</code></pre>
+<pre class="r"><code>unlist(sales)/unlist(assets)</code></pre>
+<pre><code>##    Q1_2021    Q1_2020 
+## 0.07950360 0.05407454</code></pre>
+</div>
