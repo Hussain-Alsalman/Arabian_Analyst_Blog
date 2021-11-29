@@ -22,7 +22,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
     url = "/"
     weight = 1
   [[menu.main]]
-    name = "المدونة"
+    name = "تدوينات"
     pre = "edit"
     url = "/post/"
     weight = 2
