@@ -9,23 +9,29 @@ tags:
 ---
 
 <script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+<link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
 
 
 <p><img src="/images/logo.png"  width="35%" style="display: block;
   margin-left: auto;
   margin-right: auto;"></p>
-<p>حزمة tasi هي حزمة قمت بتطويرها لجلب بيانات السوق السعودي من الأنترنت. هدفها تسهيل وتبسيط سير عمل تحليل بيانات السوق وتطوير المؤشرات والتحليلات الفنية. الأصدار الأول من هذه الحزمة كان مقتصرا على جلب الأسعار اليومية لأسهم الشركات. لكن مع مرور الوقت قررت أن اوسع أمكانيات هذه الحزمة إلى جلب القوائم المالية ايضا وتنسيق البيانات بصيغة ومعيار يتناسب مع الحزم المتخصص في تحليل التسلسلات الزمنية.</p>
+<p>tasi هي حزمة قمت بتطويرها لجلب بيانات السوق السعودي المنشورة لعامة الناس على موقع السوق السعودي. هدفها تسهيل وتبسيط سير عمل تحليل بيانات السوق وتطوير المؤشرات والتحليلات الفنية. الإصدار الأول من هذه الحزمة كان مقتصرا على جلب الأسعار اليومية لأسهم الشركات فقط. لكن مع مرور الوقت قررت أن اوسع أمكانيات هذه الحزمة إلى جلب القوائم المالية ايضا وتنسيق البيانات بصيغة ومعيار يتناسب مع الحزم المتخصص في تحليل التسلسلات الزمنية.</p>
 <div id="ما-الجديد-في-الحزمة" class="section level3">
 <h3>ما الجديد في الحزمة</h3>
 <ul>
 <li><h4 id="جلب-بيانات-مؤشرات-القطاعات">جلب بيانات مؤشرات القطاعات</h4>
-الآن بإمكانك جلب ليس اسعار الؤشر العام فقط بل مؤشرات القطاعات ايضا. هناك حوالي اكثر من عشرين دالة لجلب مؤشرات القطاعات. جميع الدوال تبدأ بـ <code>get_</code> ثم اسمع القطاع. كل ما عليك فعله هو تحديد المدة الزمنية فقط. إليك هذا المثال</li>
+الآن بإمكانك جلب ليس فقط اسعار الؤشر العام بل حتى مؤشرات القطاعات التجارية ايضا. تم إضافة حوالي اكثر من عشرين دالة لجلب تلك المؤشرات. جميع الدوال تبدأ بـ <code>get_</code> ثم أسم القطاع. كل ما عليك فعله هو تحديد المدة الزمنية فقط. إليك هذا المثال</li>
 </ul>
 <pre class="r"><code># Install the package if you have not 
 # devtools::install_github(&quot;Hussain-Alsalman/tasi&quot;)
 library(&quot;tasi&quot;)
 library(&quot;magrittr&quot;)
+library(&quot;ggplot2&quot;)
+library(&quot;dplyr&quot;)
+library(&quot;tidyquant&quot;)
 
+# Basic Example  
 get_capitals(start_date = &quot;2020-01-01&quot;, end_date = &quot;2021-11-27&quot;) %&gt;% 
   head()</code></pre>
 <pre><code>##           date    high    open     low   close totalVolume  totalTurnover
@@ -42,6 +48,22 @@ get_capitals(start_date = &quot;2020-01-01&quot;, end_date = &quot;2021-11-27&qu
 ## 473      10206
 ## 472       9581
 ## 471       9872</code></pre>
+<pre class="r"><code># More sophisticated Example
+
+bnk_df &lt;- get_banks(start_date = &quot;2021-06-01&quot;, end_date = &quot;2021-11-30&quot;) %&gt;%
+  mutate(date = lubridate::ymd(date))
+
+  ggplot(bnk_df,mapping = aes(x = date, y = close)) +
+    geom_candlestick(mapping = aes(open =open,
+                                   high= high,
+                                   low = low,
+                                   close = close)) + 
+    scale_x_date(date_labels = &quot;%b-%d-%Y&quot;,date_breaks = &quot;month&quot;) + 
+    theme_bw() + 
+    geom_smooth() +
+    labs(title = &quot;Bank Industry performance over June-Nov 2021 period&quot;,
+         subtitle = &quot;Rapid recovery was corrected during the month of November&quot;)</code></pre>
+<p><img src="/post/tasi-2-0_files/figure-html/industry_index-1.png" width="672" /></p>
 <ul>
 <li><h4 id="تعديل-سعر-السهم-ليتضمن-الارباح-الموزعة">تعديل سعر السهم ليتضمن الارباح الموزعة</h4>
 من العمليات الشائعة في تحليل الأسهم هو حساب عوائد السهم خلال فترة زمنية معينة (معدل التغير في سعر السهم). لكن ذلك لا يعكس العائد الكلي للسهم لأن معظم الشركات تقوم بتوزيع الأرباح للمساهمين مما يشكل عائد إضافي للمستثمر. لذلك قمت بتطوير دالة تقوم بتعديل سعر السهم ليعكس ايضا الارباح الموزعة. إليك هذا المثال</li>
@@ -71,9 +93,9 @@ comp %&gt;%
 ## 2020-01-07 47.00 47.25 46.45 1300968 46.50 43.82531
 ## 2020-01-08 46.20 46.30 45.80 1306755 46.30 43.63682</code></pre>
 <ul>
-<li><h4 id="جلب-بيانات-الأسهم-على-طريقة-quantmodgetsymbols">جلب بيانات الأسهم على طريقة <code>quantmod::getSymbols</code></h4>
-من الحزم آر الشهيرة جدا في عالم تحليل سوق المال هي <code>quantmod</code>. هذه الحزمة توفر الكثير من الأدوات التحليلية الرائعة لكنها لا تعمل بشكل سلس مع بيانات الأسواق الغير امريكية. لذلك قمت بتطوير دالة مماثلة لـ <code>getSymbols()</code> للسوق السعودي. إليك هذا المثال</li>
+<li><h4 id="جلب-بيانات-الأسهم-على-طريقة-quantmodgetsymbols">جلب بيانات الأسهم على طريقة <code>quantmod::getSymbols</code></h4></li>
 </ul>
+<p>من حزم R الشهيرة جدا في عالم تحليل سوق المال هي <code>quantmod</code>. هذه الحزمة توفر الكثير من الأدوات التحليلية الرائعة لكنها لا تعمل بشكل سلس مع بيانات الأسواق الغير امريكية. لذلك قمت بتطوير دالة مماثلة لـ <code>getSymbols()</code> للسوق السعودي. إليك هذا المثال</p>
 <pre class="r"><code>library(&quot;quantmod&quot;)
 library(&quot;tasi&quot;)
 tasi::getSymbols(start_date = &quot;2021-01-01&quot;,
@@ -83,52 +105,304 @@ tasi::getSymbols(start_date = &quot;2021-01-01&quot;,
 #make sure to prefix the company symbol num by &quot;T&quot; 
 chart_Series(T2222)</code></pre>
 <p><img src="/post/tasi-2-0_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p><br></p>
 <ul>
 <li><h4 id="جلب-القوائم-المالية">جلب القوائم المالية</h4>
-لعل هذه الميزة هي الأقوى بين المزايا في الحزمة الجديد. هناك الكثير من المعدٌلات والنِسَب المالية التي يحتاج لحسابها المستثمر ليحدد مدى كفاءة تشغيل الشركة أو مدى ربحيتها او معدل تغير سبل التمويل لديها. كل هذه المعلومات وغيرها يمكن العثور عليها في القوائم المالية لكن ذلك يتطلب الكثير من البحث اليدوي. لذلك قمت بتطوير عدة دوال تبسط هذه العملية. إليك هذا المثال</li>
+لعل هذه الميزة هي الأقوى بين المزايا في الحزمة الجديد. هناك الكثير من المعدٌلات والنِسَب المالية التي يحتاج المستثمر حسابها ليحدد مدى كفاءة تشغيل الشركة أو مدى ربحيتها او معدل تغير سبل التمويل لديها. كل هذه المعلومات وغيرها يمكن العثور عليها في القوائم المالية لكن ذلك يتطلب الكثير من البحث اليدوي. لذلك قمت بتطوير عدة دوال تبسط هذه العملية. إليك هذا المثال</li>
 </ul>
 <pre class="r"><code>library(&quot;tasi&quot;)
+library(&quot;kableExtra&quot;)
 
 get_income_statement(company_symbol = 1010,
                     period_type = &quot;y&quot; # &quot;q&quot; for quarterly and &quot;y&quot; for yearly
-                    )</code></pre>
-<pre><code>## # A tibble: 22 × 5
-##    statement_of_income                     Y_2020      Y_2019     Y_2018  Y_2017
-##    &lt;chr&gt;                                    &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;   &lt;dbl&gt;
-##  1 Special Commission Income           9813394000 10371426000 8332365000  7.43e9
-##  2 Special Commission Expenses         1599789000  2534411000 1646601000  1.49e9
-##  3 Net Special Commission Income       8213605000  7837015000 6685764000  5.94e9
-##  4 Fees from Services                  1873555000  2030745000 1711052000  1.51e9
-##  5 Exchange Income                      412614000   342658000  337043000  2.90e8
-##  6 Trading Income                       218297000   132806000    2717000  2.18e7
-##  7 Realized Gains on Investments, net   305068000   255486000  130385000  2.83e8
-##  8 Dividend Income                      102518000   102866000   57533000  5.08e7
-##  9 Other Operating Income                79464000    15487000   42907000  3.39e7
-## 10 Total Operating Income             11205121000 10717063000 8967401000  8.13e9
-## # … with 12 more rows</code></pre>
+                    ) %&gt;%
+  head() %&gt;%
+  kbl(table.attr = &quot;style=&#39;direction: ltr&#39;&quot;)</code></pre>
+<table style="direction: ltr">
+<thead>
+<tr>
+<th style="text-align:left;">
+statement_of_income
+</th>
+<th style="text-align:right;">
+Y_2020
+</th>
+<th style="text-align:right;">
+Y_2019
+</th>
+<th style="text-align:right;">
+Y_2018
+</th>
+<th style="text-align:right;">
+Y_2017
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Special Commission Income
+</td>
+<td style="text-align:right;">
+9813394000
+</td>
+<td style="text-align:right;">
+10371426000
+</td>
+<td style="text-align:right;">
+8332365000
+</td>
+<td style="text-align:right;">
+7425107000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Special Commission Expenses
+</td>
+<td style="text-align:right;">
+1599789000
+</td>
+<td style="text-align:right;">
+2534411000
+</td>
+<td style="text-align:right;">
+1646601000
+</td>
+<td style="text-align:right;">
+1490030000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Net Special Commission Income
+</td>
+<td style="text-align:right;">
+8213605000
+</td>
+<td style="text-align:right;">
+7837015000
+</td>
+<td style="text-align:right;">
+6685764000
+</td>
+<td style="text-align:right;">
+5935077000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fees from Services
+</td>
+<td style="text-align:right;">
+1873555000
+</td>
+<td style="text-align:right;">
+2030745000
+</td>
+<td style="text-align:right;">
+1711052000
+</td>
+<td style="text-align:right;">
+1510314000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Exchange Income
+</td>
+<td style="text-align:right;">
+412614000
+</td>
+<td style="text-align:right;">
+342658000
+</td>
+<td style="text-align:right;">
+337043000
+</td>
+<td style="text-align:right;">
+290207000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Trading Income
+</td>
+<td style="text-align:right;">
+218297000
+</td>
+<td style="text-align:right;">
+132806000
+</td>
+<td style="text-align:right;">
+2717000
+</td>
+<td style="text-align:right;">
+21815000
+</td>
+</tr>
+</tbody>
+</table>
+<p><br></p>
 <ul>
 <li><h4 id="جلب-القوائم-المالية-الأخرى-من-صيغة-xbrl">جلب القوائم المالية الأخرى من صيغة XBRL</h4>
-لقد سبق وتحدث بشكل مفصل عن صيغة XBRL الخاصة بالتقارير المالية يمكنك الأطلاع على التدوينة هنا. هذه الصيغة تمكننا من جلب معلومات اضافية من التقارير الربعية والسنوية بالأيضاحات ومعلومات مدققي المحاسبة. إليك هذا المثال</li>
+لقد سبق وتحدث بشكل مفصل عن صيغة XBRL الخاصة بالتقارير المالية يمكنك الأطلاع على التدوينة <a href="https://www.arabiananalyst.com/2018/03/27/exploring-xbrl-world/">هنا</a>. هذه الصيغة تمكننا من جلب معلومات اضافية من التقارير الربعية والسنوية بالأيضاحات ومعلومات مدققي المحاسبة. إليك هذا المثال</li>
 </ul>
 <pre class="r"><code>library(&quot;tasi&quot;)
+library(&quot;kableExtra&quot;)
 # NOTE!!! This function will ask you to choose from available statements if you leave statement_type unfilled. 
 get_statement_xbrl(company_symbol = 2350,
                    period = &quot;Q1-2021&quot;,
-                   statement_type = &quot;StatementOfFinancialPositionCurrentNonCurrent&quot;)</code></pre>
-<pre><code>## # A tibble: 47 × 5
-##    `[300200] Statement of financial positi… ``        ``        ``       ``     
-##    &lt;chr&gt;                                    &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt;    &lt;chr&gt;  
-##  1 Start Date                               &quot;2021-01… &quot;2020-01… &quot;2020-0… &quot;Note …
-##  2 End Date                                 &quot;2021-03… &quot;2020-03… &quot;2020-1… &quot;Note …
-##  3 Statement of financial position [abstra… &quot;&quot;        &quot;&quot;        &quot;&quot;       &quot;&quot;     
-##  4 Assets [abstract]                        &quot;&quot;        &quot;&quot;        &quot;&quot;       &quot;&quot;     
-##  5 Current assets [abstract]                &quot;&quot;        &quot;&quot;        &quot;&quot;       &quot;&quot;     
-##  6 Bank balances and cash                   &quot;884,724&quot; &quot;533,923&quot; &quot;564,72… &quot;&quot;     
-##  7 Short-term deposits                      &quot;952,500&quot; &quot;1,282,5… &quot;615,00… &quot;&quot;     
-##  8 Trade accounts receivable                &quot;2,844,8… &quot;2,108,1… &quot;2,643,… &quot;&quot;     
-##  9 Prepayments                              &quot;80,083&quot;  &quot;79,143&quot;  &quot;96,028&quot; &quot;&quot;     
-## 10 Inventories                              &quot;1,319,6… &quot;1,219,8… &quot;1,280,… &quot;&quot;     
-## # … with 37 more rows</code></pre>
+                   statement_type = &quot;StatementOfFinancialPositionCurrentNonCurrent&quot;) %&gt;%
+  .[c(1:3,6:10),] %&gt;% 
+  kbl(table.attr = &quot;style=&#39;direction: ltr&#39;&quot;)</code></pre>
+<table style="direction: ltr">
+<thead>
+<tr>
+<th style="text-align:left;">
+[300200] Statement of financial position, current/ non-current
+</th>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Start Date
+</td>
+<td style="text-align:left;">
+2021-01-01
+</td>
+<td style="text-align:left;">
+2020-01-01
+</td>
+<td style="text-align:left;">
+2020-01-01
+</td>
+<td style="text-align:left;">
+Note No. 
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+End Date
+</td>
+<td style="text-align:left;">
+2021-03-31
+</td>
+<td style="text-align:left;">
+2020-03-31
+</td>
+<td style="text-align:left;">
+2020-12-31
+</td>
+<td style="text-align:left;">
+Note No. 
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Statement of financial position [abstract]
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Bank balances and cash
+</td>
+<td style="text-align:left;">
+884,724
+</td>
+<td style="text-align:left;">
+533,923
+</td>
+<td style="text-align:left;">
+564,726
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Short-term deposits
+</td>
+<td style="text-align:left;">
+952,500
+</td>
+<td style="text-align:left;">
+1,282,500
+</td>
+<td style="text-align:left;">
+615,000
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Trade accounts receivable
+</td>
+<td style="text-align:left;">
+2,844,837
+</td>
+<td style="text-align:left;">
+2,108,162
+</td>
+<td style="text-align:left;">
+2,643,059
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Prepayments
+</td>
+<td style="text-align:left;">
+80,083
+</td>
+<td style="text-align:left;">
+79,143
+</td>
+<td style="text-align:left;">
+96,028
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Inventories
+</td>
+<td style="text-align:left;">
+1,319,617
+</td>
+<td style="text-align:left;">
+1,219,801
+</td>
+<td style="text-align:left;">
+1,280,975
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+</tbody>
+</table>
+<p><br></p>
 <p>هذه الصيغة تمكننا من استخراج معلومات معينة وإجراء حسابات متخصصة مثل معدل دوران الأصول asset turnover ratio لقياس مدى كفاءة الشركة في توظيف مواردها. إليك هذا المثال :</p>
 <pre class="r"><code>balance_sheet &lt;- get_statement_xbrl(company_symbol = 2350,
                    period = &quot;Q1-2021&quot;,

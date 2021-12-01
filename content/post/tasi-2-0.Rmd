@@ -8,31 +8,51 @@ tags:
   - حزم-r
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE) 
+```{r setup, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE) 
 ```
 
  <img src="/images/logo.png"  width="35%" style="display: block;
   margin-left: auto;
   margin-right: auto;">
 
-حزمة tasi هي حزمة قمت بتطويرها لجلب بيانات السوق السعودي من الأنترنت. هدفها تسهيل وتبسيط سير عمل تحليل بيانات السوق وتطوير المؤشرات والتحليلات الفنية. الأصدار الأول من هذه الحزمة كان مقتصرا على جلب الأسعار اليومية لأسهم الشركات. لكن مع مرور الوقت قررت أن اوسع أمكانيات هذه الحزمة إلى جلب القوائم المالية ايضا وتنسيق البيانات بصيغة ومعيار يتناسب مع الحزم المتخصص في تحليل التسلسلات الزمنية. 
+tasi هي حزمة قمت بتطويرها لجلب بيانات السوق السعودي المنشورة لعامة الناس على موقع السوق السعودي. هدفها تسهيل وتبسيط سير عمل تحليل بيانات السوق وتطوير المؤشرات والتحليلات الفنية. الإصدار الأول من هذه الحزمة كان مقتصرا على جلب الأسعار اليومية لأسهم الشركات فقط. لكن مع مرور الوقت قررت أن اوسع أمكانيات هذه الحزمة إلى جلب القوائم المالية ايضا وتنسيق البيانات بصيغة ومعيار يتناسب مع الحزم المتخصص في تحليل التسلسلات الزمنية. 
 
 
 ### ما الجديد في الحزمة 
 
- 
 - #### جلب بيانات مؤشرات القطاعات 
-الآن بإمكانك جلب ليس اسعار الؤشر العام فقط بل مؤشرات القطاعات ايضا. هناك  حوالي  اكثر من  عشرين دالة لجلب مؤشرات القطاعات. جميع الدوال تبدأ بـ `get_` ثم اسمع القطاع. كل ما عليك فعله هو تحديد المدة الزمنية فقط. إليك هذا المثال 
+الآن بإمكانك جلب ليس فقط اسعار الؤشر العام  بل حتى مؤشرات القطاعات التجارية ايضا. تم إضافة حوالي اكثر من عشرين دالة لجلب تلك المؤشرات. جميع الدوال تبدأ بـ `get_` ثم أسم القطاع. كل ما عليك فعله هو تحديد المدة الزمنية فقط. إليك هذا المثال 
 
-```{r, industry_index}
+
+```{r, industry_index, message=FALSE}
 # Install the package if you have not 
 # devtools::install_github("Hussain-Alsalman/tasi")
 library("tasi")
 library("magrittr")
+library("ggplot2")
+library("dplyr")
+library("tidyquant")
 
+# Basic Example  
 get_capitals(start_date = "2020-01-01", end_date = "2021-11-27") %>% 
   head()
+
+# More sophisticated Example
+
+bnk_df <- get_banks(start_date = "2021-06-01", end_date = "2021-11-30") %>%
+  mutate(date = lubridate::ymd(date))
+
+  ggplot(bnk_df,mapping = aes(x = date, y = close)) +
+    geom_candlestick(mapping = aes(open =open,
+                                   high= high,
+                                   low = low,
+                                   close = close)) + 
+    scale_x_date(date_labels = "%b-%d-%Y",date_breaks = "month") + 
+    theme_bw() + 
+    geom_smooth() +
+    labs(title = "Bank Industry performance over June-Nov 2021 period",
+         subtitle = "Rapid recovery was corrected during the month of November")
 
 ```
  
@@ -56,7 +76,8 @@ comp %>% add_adj_price(comp_symbol) %>% head()
 ```
 
 - #### جلب بيانات الأسهم على طريقة  `quantmod::getSymbols`
-من الحزم آر الشهيرة جدا في عالم تحليل سوق المال هي `quantmod`. هذه الحزمة توفر الكثير من الأدوات التحليلية الرائعة لكنها لا تعمل بشكل سلس مع بيانات الأسواق الغير امريكية. لذلك قمت بتطوير دالة مماثلة لـ `getSymbols()` للسوق السعودي. إليك هذا المثال 
+
+من حزم R الشهيرة جدا في عالم تحليل سوق المال هي `quantmod`. هذه الحزمة توفر الكثير من الأدوات التحليلية الرائعة لكنها لا تعمل بشكل سلس مع بيانات الأسواق الغير امريكية. لذلك قمت بتطوير دالة مماثلة لـ `getSymbols()` للسوق السعودي. إليك هذا المثال 
 
 ```{r, message=FALSE}
 library("quantmod")
@@ -69,31 +90,42 @@ tasi::getSymbols(start_date = "2021-01-01",
 chart_Series(T2222)
 ```
 
+<br>
 
 - #### جلب القوائم المالية 
-لعل هذه الميزة هي الأقوى بين المزايا في الحزمة الجديد. هناك الكثير من المعدٌلات والنِسَب المالية التي يحتاج لحسابها المستثمر ليحدد مدى كفاءة تشغيل الشركة أو مدى ربحيتها او معدل تغير سبل التمويل لديها. كل هذه المعلومات وغيرها يمكن العثور عليها في القوائم المالية لكن ذلك يتطلب الكثير من البحث اليدوي. لذلك قمت بتطوير عدة دوال تبسط هذه العملية. إليك هذا المثال 
+لعل هذه الميزة هي الأقوى بين المزايا في الحزمة الجديد. هناك الكثير من المعدٌلات والنِسَب المالية التي يحتاج  المستثمر حسابها ليحدد مدى كفاءة تشغيل الشركة أو مدى ربحيتها او معدل تغير سبل التمويل لديها. كل هذه المعلومات وغيرها يمكن العثور عليها في القوائم المالية لكن ذلك يتطلب الكثير من البحث اليدوي. لذلك قمت بتطوير عدة دوال تبسط هذه العملية. إليك هذا المثال 
 
 ```{r}
 library("tasi")
+library("kableExtra")
 
 get_income_statement(company_symbol = 1010,
                     period_type = "y" # "q" for quarterly and "y" for yearly
-                    )
+                    ) %>%
+  head() %>%
+  kbl(table.attr = "style='direction: ltr'")
 
 ```
 
+<br>
 
 - #### جلب القوائم المالية الأخرى من صيغة XBRL 
-لقد سبق وتحدث بشكل مفصل عن صيغة XBRL الخاصة بالتقارير المالية يمكنك الأطلاع على التدوينة هنا. هذه الصيغة تمكننا من جلب معلومات اضافية من التقارير الربعية والسنوية بالأيضاحات ومعلومات مدققي المحاسبة. إليك هذا المثال
+لقد سبق وتحدث بشكل مفصل عن صيغة XBRL الخاصة بالتقارير المالية يمكنك الأطلاع على التدوينة [هنا](https://www.arabiananalyst.com/2018/03/27/exploring-xbrl-world/). هذه الصيغة تمكننا من جلب معلومات اضافية من التقارير الربعية والسنوية بالأيضاحات ومعلومات مدققي المحاسبة. إليك هذا المثال
+
 
 ```{r}
 library("tasi")
+library("kableExtra")
 # NOTE!!! This function will ask you to choose from available statements if you leave statement_type unfilled. 
 get_statement_xbrl(company_symbol = 2350,
                    period = "Q1-2021",
-                   statement_type = "StatementOfFinancialPositionCurrentNonCurrent")
+                   statement_type = "StatementOfFinancialPositionCurrentNonCurrent") %>%
+  .[c(1:3,6:10),] %>% 
+  kbl(table.attr = "style='direction: ltr'")
 
 ```
+
+<br>
 
 
 هذه الصيغة تمكننا من  استخراج معلومات معينة وإجراء حسابات متخصصة مثل معدل دوران الأصول asset turnover ratio لقياس مدى كفاءة الشركة في توظيف مواردها. إليك هذا المثال : 
